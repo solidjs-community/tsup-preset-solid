@@ -6,7 +6,6 @@
     "dist"
   ],
   "private": true,
-  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -36,15 +35,18 @@
     "dev": "vite serve dev",
     "test": "echo \"test not setup\"",
     "build": "tsup",
-    "prepublishOnly": "pnpm build",
-    "format": "prettier -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"dev/**/*.{js,ts,json,css,tsx,jsx}\"",
-    "update-deps": "pnpm up -Li",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "solid-js": ">=1.6.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "esbuild-plugin-solid": "^0.4.2",
+    "solid-js": "^1.6.9",
+    "tsup": "^6.5.0",
+    "vite": "^4.0.4",
+    "vite-plugin-solid": "^2.5.0"
+  },
   "keywords": [
     "solid"
   ],

@@ -1,77 +1,29 @@
 {
   "version": "0.0.0",
-  "name": "tsup-preset-solid",
+  "name": "tsup-preset-solid-monorepo",
   "description": "Preset for building your SolidJS package with tsup.",
   "license": "MIT",
   "author": "Damian Tarnawski <gthetarnav@gmail.com>",
   "contributors": [],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/solidjs-community/tsup-preset-solid.git"
-  },
-  "homepage": "https://github.com/solidjs-community/tsup-preset-solid#readme",
-  "bugs": {
-    "url": "https://github.com/solidjs-community/tsup-preset-solid/issues"
-  },
-  "files": [
-    "dist"
-  ],
-  "private": false,
-  "sideEffects": false,
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "browser": {},
-  "exports": {
-    "solid": {
-      "development": "./dist/index.dev.solid.jsx",
-      "import": "./dist/index.solid.jsx"
-    },
-    "browser": {
-      "development": {
-        "import": "./dist/index.dev.js",
-        "require": "./dist/index.dev.cjs"
-      },
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "development": {
-      "import": "./dist/index.dev.js",
-      "require": "./dist/index.dev.cjs"
-    },
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
-  },
+  "private": true,
   "scripts": {
     "postinstall": "pnpm build",
-    "test": "echo \"test not setup\"",
-    "build": "tsup",
-    "format": "prettier -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"example/**/*.{js,ts,json,css,tsx,jsx}\"",
-    "lint": "eslint --ignore-path .gitignore --max-warnings 0 src/**/*.{js,ts,tsx,jsx}",
-    "typecheck": "tsc --noEmit",
+    "test": "pnpm -dir preset run test",
+    "build": "pnpm -dir preset run build",
+    "format": "prettier --ignore-path .gitignore -w \"preset/**/*.{js,ts,json,css,tsx,jsx}\" \"example/**/*.{js,ts,json,css,tsx,jsx}\"",
+    "lint": "eslint --ignore-path .gitignore --max-warnings 0 preset/**/*.{js,ts,tsx,jsx}",
+    "typecheck": "pnpm -dir preset run typecheck",
     "update-deps": "pnpm up -Li"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
-    "esbuild": "^0.17.0",
-    "esbuild-plugin-solid": "^0.4.2",
     "eslint": "^8.32.0",
     "prettier": "2.8.3",
     "prettier-plugin-organize-imports": "^3.2.2",
-    "tsup": "^6.5.0",
     "typescript": "^4.9.4"
   },
-  "keywords": [
-    "solid",
-    "tsup",
-    "package",
-    "build",
-    "solidjs",
-    "solid-js"
-  ],
   "packageManager": "pnpm@7.20.0",
   "engines": {
     "node": ">=18"
