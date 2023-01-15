@@ -27,10 +27,15 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "esbuild-plugin-solid": "^0.4.2"
+  },
+  "peerDependencies": {
+    "tsup": "^6.5.0"
+  },
   "devDependencies": {
     "@types/node": "^18.11.18",
     "esbuild": "^0.17.0",
-    "esbuild-plugin-solid": "^0.4.2",
     "tsup": "^6.5.0"
   },
   "keywords": [

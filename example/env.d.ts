@@ -4,6 +4,7 @@ declare global {
       NODE_ENV: 'production' | 'development'
       PROD: boolean
       DEV: boolean
+      SSR: boolean
     }
   }
   namespace NodeJS {

@@ -12,6 +12,13 @@ export const Hello: Component<{ to?: string }> = props => {
   // This will only log during development, console is removed in production
   console.log('Hello World!')
 
+  if (import.meta.env.SSR) {
+    // This will only log during server side rendering
+    console.log('Hello Server!')
+  } else {
+    window.addEventListener('load', () => {})
+  }
+
   createComputed(() => {
     if (typeof props.to === 'string') setHello(props.to)
   })
