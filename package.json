@@ -1,17 +1,17 @@
 {
   "version": "0.0.0",
-  "name": "{{name_of_lib}}",
-  "description": "{{desc_of_lib}}",
+  "name": "tsup-preset-solid",
+  "description": "Preset for building your SolidJS package with tsup.",
   "license": "MIT",
-  "author": "{{me}}",
+  "author": "Damian Tarnawski <gthetarnav@gmail.com>",
   "contributors": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/{{me}}/{{name_of_lib}}.git"
+    "url": "git+https://github.com/solidjs-community/tsup-preset-solid.git"
   },
-  "homepage": "https://github.com/{{me}}/{{name_of_lib}}#readme",
+  "homepage": "https://github.com/solidjs-community/tsup-preset-solid#readme",
   "bugs": {
-    "url": "https://github.com/{{me}}/{{name_of_lib}}/issues"
+    "url": "https://github.com/solidjs-community/tsup-preset-solid/issues"
   },
   "files": [
     "dist"
@@ -44,29 +44,35 @@
     "require": "./dist/index.cjs"
   },
   "scripts": {
-    "dev": "vite serve dev",
+    "postinstall": "pnpm build",
     "test": "echo \"test not setup\"",
     "build": "tsup",
-    "prepublishOnly": "pnpm build",
-    "format": "prettier -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"dev/**/*.{js,ts,json,css,tsx,jsx}\"",
+    "format": "prettier -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"example/**/*.{js,ts,json,css,tsx,jsx}\"",
     "update-deps": "pnpm up -Li",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "solid-js": ">=1.6.0"
-  },
   "devDependencies": {
+    "@types/node": "^18.11.18",
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
     "esbuild": "^0.17.0",
     "esbuild-plugin-solid": "^0.4.2",
+    "eslint": "^8.32.0",
     "prettier": "2.8.3",
-    "solid-js": "^1.6.9",
+    "prettier-plugin-organize-imports": "^3.2.2",
     "tsup": "^6.5.0",
-    "typescript": "^4.9.4",
-    "vite": "^4.0.4",
-    "vite-plugin-solid": "^2.5.0"
+    "typescript": "^4.9.4"
   },
   "keywords": [
-    "solid"
+    "solid",
+    "tsup",
+    "package",
+    "build",
+    "solidjs",
+    "solid-js"
   ],
-  "packageManager": "pnpm@7.20.0"
+  "packageManager": "pnpm@7.20.0",
+  "engines": {
+    "node": ">=18"
+  }
 }
