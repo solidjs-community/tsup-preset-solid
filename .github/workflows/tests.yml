@@ -21,18 +21,22 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --ignore-scripts
 
       - name: Build
         run: pnpm run build
 
+      - name: Lint
+        run: pnpm lint
+
       - name: Test
+        # Will run the step even if lint step failed
+        if: success() || failure()
         run: pnpm run test
         env:
           CI: true
 
       - name: Typecheck
+        # Will run the step even if lint step failed
+        if: success() || failure()
         run: pnpm run typecheck
