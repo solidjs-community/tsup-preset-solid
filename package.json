@@ -22,8 +22,6 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
-    "postinstall": "pnpm build",
     "test": "echo \"test not setup\"",
     "build": "tsup",
     "prepublish": "pnpm build",
