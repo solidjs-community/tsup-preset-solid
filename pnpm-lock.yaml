@@ -7,17 +7,26 @@ importers:
       '@types/node': ^18.11.18
       '@typescript-eslint/eslint-plugin': ^5.48.1
       '@typescript-eslint/parser': ^5.48.1
+      esbuild: ^0.17.0
+      esbuild-plugin-solid: ^0.4.2
       eslint: ^8.32.0
       prettier: 2.8.3
       prettier-plugin-organize-imports: ^3.2.2
+      tsup: ^6.5.0
+      type-fest: ^3.5.2
       typescript: ^4.9.4
+    dependencies:
+      esbuild-plugin-solid: 0.4.2_j3sjzwtkwdvneujqy7lan5tbhi
+      type-fest: 3.5.2
     devDependencies:
       '@types/node': 18.11.18
       '@typescript-eslint/eslint-plugin': 5.48.1_oomjohfipuyaxs2zyomcx4f5by
       '@typescript-eslint/parser': 5.48.1_7uibuqfxkfaozanbtbziikiqje
+      esbuild: 0.17.0
       eslint: 8.32.0
       prettier: 2.8.3
       prettier-plugin-organize-imports: 3.2.2_uhxzhaxu465qzax2tftpee5s7i
+      tsup: 6.5.0_typescript@4.9.4
       typescript: 4.9.4
 
   example:
@@ -33,21 +42,6 @@ importers:
       tsup: 6.5.0
       vite: 4.0.4
       vite-plugin-solid: 2.5.0_solid-js@1.6.9+vite@4.0.4
-
-  preset:
-    specifiers:
-      '@types/node': ^18.11.18
-      esbuild: ^0.17.0
-      esbuild-plugin-solid: ^0.4.2
-      tsup: ^6.5.0
-      type-fest: ^3.5.2
-    dependencies:
-      esbuild-plugin-solid: 0.4.2_j3sjzwtkwdvneujqy7lan5tbhi
-      type-fest: 3.5.2
-    devDependencies:
-      '@types/node': 18.11.18
-      esbuild: 0.17.0
-      tsup: 6.5.0
 
 packages:
 
@@ -2430,6 +2424,42 @@ packages:
       source-map: 0.8.0-beta.0
       sucrase: 3.29.0
       tree-kill: 1.2.2
+    transitivePeerDependencies:
+      - supports-color
+      - ts-node
+    dev: true
+
+  /tsup/6.5.0_typescript@4.9.4:
+    resolution: {integrity: sha512-36u82r7rYqRHFkD15R20Cd4ercPkbYmuvRkz3Q1LCm5BsiFNUgpo36zbjVhCOgvjyxNBWNKHsaD5Rl8SykfzNA==}
+    engines: {node: '>=14'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1
+      postcss: ^8.4.12
+      typescript: ^4.1.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      postcss:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      bundle-require: 3.1.2_esbuild@0.15.18
+      cac: 6.7.14
+      chokidar: 3.5.3
+      debug: 4.3.4
+      esbuild: 0.15.18
+      execa: 5.1.1
+      globby: 11.1.0
+      joycon: 3.1.1
+      postcss-load-config: 3.1.4
+      resolve-from: 5.0.0
+      rollup: 3.10.0
+      source-map: 0.8.0-beta.0
+      sucrase: 3.29.0
+      tree-kill: 1.2.2
+      typescript: 4.9.4
     transitivePeerDependencies:
       - supports-color
       - ts-node

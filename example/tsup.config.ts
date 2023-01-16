@@ -1,4 +1,4 @@
-import { defineConfig } from '../preset/src'
+import { defineConfig } from '../src'
 
 export default defineConfig(
   [
