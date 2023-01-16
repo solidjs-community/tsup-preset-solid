@@ -24,7 +24,7 @@ Preset for building your SolidJS packages with ease using [**tsup**](https://tsu
 
 - **Multiple entries** - Supports multiple package entries. _(submodules)_
 
-- **Automatic package.json configuration** - Automatically writes `package.json` fields based on the configuration.
+- **Automatic package.json configuration** - Automatically writes export fields to `package.json` based on passed options.
 
 > **Warning** This is a very fresh project, so diverging from the happy path may cause unexpected results. [Please report any issues you find.](https://github.com/solidjs-community/tsup-preset-solid/issues)
 
