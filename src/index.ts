@@ -1,9 +1,15 @@
 import { solidPlugin } from 'esbuild-plugin-solid'
+import fsp from 'fs/promises'
 import path from 'path'
 import { defineConfig as tsupDefineConfig, Format, Options } from 'tsup'
 import type { PackageJson } from 'type-fest'
 
 const cwd = process.cwd()
+const isCI =
+  process.env['CI'] === 'true' ||
+  process.env['GITHUB_ACTIONS'] === 'true' ||
+  process.env['CI'] === '"1"' ||
+  process.env['GITHUB_ACTIONS'] === '"1"'
 
 const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
 
@@ -15,6 +21,7 @@ export type PresetOptions = {
   foramt?: 'esm' | ('esm' | 'cjs')[]
   outDir?: string | undefined
   tsupOptions?: (config: Options) => Options
+  esbuildPlugins?: Options['esbuildPlugins']
 }
 
 export type ExportOptions = {
@@ -25,14 +32,13 @@ export type ExportOptions = {
 const DEFAULT_FORMAT: Format[] = ['esm', 'cjs']
 
 export function defineConfig(
-  userOptions: PresetOptions | PresetOptions[],
+  options: PresetOptions | PresetOptions[],
   exportsOptons?: ExportOptions,
 ): ReturnType<typeof tsupDefineConfig> {
   return tsupDefineConfig(config => {
-    const watching = !!config.watch
-    const shouldCollectExports = !!(
-      exportsOptons?.writePackageJson || exportsOptons?.printInstructions
-    )
+    const watching = !isCI && !!config.watch
+    const shouldCollectExports =
+      !isCI && !watching && !!(exportsOptons?.writePackageJson || exportsOptons?.printInstructions)
 
     type Browser = Exclude<PackageJson['browser'], string | undefined>
     const exports: PackageJson = {
@@ -41,24 +47,51 @@ export function defineConfig(
       exports: {},
     }
 
-    const isSingleEntry = !Array.isArray(userOptions) || userOptions.length === 1
+    const entries = asArray(options)
+    let buildsToComplete = watching ? Infinity : 0
 
-    const nestedOptions = asArray(userOptions).map((options, i) => {
-      const outDir = options.outDir ? `./${options.outDir}` : './dist'
-      const entryFilename = path.basename(path.normalize(options.entry)).split('.')[0]
-      const mainExport = `${outDir}/${
-        isSingleEntry ? entryFilename : `${entryFilename}/${entryFilename}`
-      }`
-      const outFormat = options.foramt ?? DEFAULT_FORMAT
+    // Handle the last build to write the package.json
+    async function onSuccess() {
+      if (!shouldCollectExports || --buildsToComplete > 0) return
+
+      if (exportsOptons.printInstructions) {
+        // eslint-disable-next-line no-console
+        console.log(
+          `\nTo use these exports, add the following to your package.json:\n\n${JSON.stringify(
+            exports,
+            null,
+            2,
+          )}\n`,
+        )
+      }
+
+      if (exportsOptons.writePackageJson) {
+        const pkgPath = path.join(cwd, 'package.json')
+        const pkg: PackageJson = await fsp.readFile(pkgPath, 'utf-8').then(JSON.parse)
+        const newPkg = { ...pkg, ...exports }
+        await fsp.writeFile(pkgPath, JSON.stringify(newPkg, null, 2) + '\n', 'utf-8')
+      }
+    }
+
+    const nestedOptions = asArray(options).map((entry, i) => {
+      const outFormat = entry.foramt ?? DEFAULT_FORMAT
+
       const hasCjs = outFormat.includes('cjs')
-      const hasJSX = options.entry.endsWith('.jsx') || options.entry.endsWith('.tsx')
-      const hasDev = !!options.devEntry
-      const hasServer = !!options.serverEntry
+      const hasJSX = entry.entry.endsWith('.jsx') || entry.entry.endsWith('.tsx')
+      const hasDev = !!entry.devEntry
+      const hasServer = !!entry.serverEntry
+
+      const outDir = entry.outDir ? `./${entry.outDir}` : './dist'
+      const entryFilename = path.basename(path.normalize(entry.entry)).split('.')[0]
+      const mainExport = `${outDir}/${
+        entries.length === 1 ? entryFilename : `${entryFilename}/${entryFilename}`
+      }`
       const devExport = `${mainExport}.dev`
       const serverExport = `${mainExport}.server`
-      const handleOptions = options.tsupOptions ?? (o => o)
-
       const typesExport = `${outDir}/${entryFilename}.d.ts`
+
+      const handleOptions = entry.tsupOptions ?? (o => o)
+      const esbuildPlugins = entry.esbuildPlugins ?? []
 
       if (shouldCollectExports) {
         if (i === 0) {
@@ -105,10 +138,11 @@ export function defineConfig(
           ...getConditions('main'),
         }
 
-        if (isSingleEntry) exports.exports = allConditions
-        else
-          (exports.exports as any)[`${entryFilename === 'index' ? '.' : `./${entryFilename}`}`] =
+        if (entries.length === 1) exports.exports = allConditions
+        else {
+          ;(exports.exports as any)[`${entryFilename === 'index' ? '.' : `./${entryFilename}`}`] =
             allConditions
+        }
       }
 
       const permutations = [{ dev: false, solid: false, server: false }]
@@ -123,18 +157,21 @@ export function defineConfig(
       if (hasJSX) permutations.push({ dev: false, solid: true, server: false })
 
       return permutations.map(({ dev, solid, server }, j) => {
+        // each permutation is a separate build
+        buildsToComplete++
+
         return handleOptions({
           target: 'esnext',
           format: solid || watching ? 'esm' : outFormat,
           clean: i === 0 && j === 0,
-          dts: j === 0 ? options.entry : undefined,
+          dts: j === 0 ? entry.entry : undefined,
           entry: {
             [`${dev ? devExport : server ? serverExport : mainExport}`]:
-              dev && typeof options.devEntry === 'string'
-                ? options.devEntry
-                : server && typeof options.serverEntry === 'string'
-                ? options.serverEntry
-                : options.entry,
+              dev && typeof entry.devEntry === 'string'
+                ? entry.devEntry
+                : server && typeof entry.serverEntry === 'string'
+                ? entry.serverEntry
+                : entry.entry,
           },
           treeshake: watching ? false : { preset: 'safest' },
           replaceNodeEnv: !watching,
@@ -152,7 +189,7 @@ export function defineConfig(
             }
             esbuildOptions.jsx = 'preserve'
 
-            if (!dev && options.dropConsole) esbuildOptions.drop = ['console', 'debugger']
+            if (!dev && entry.dropConsole) esbuildOptions.drop = ['console', 'debugger']
 
             return esbuildOptions
           },
@@ -160,12 +197,11 @@ export function defineConfig(
             if (format === 'esm' && solid) return { js: '.jsx' }
             return {}
           },
-          esbuildPlugins: !solid ? [solidPlugin() as any] : undefined,
+          esbuildPlugins: !solid ? [solidPlugin() as any, ...esbuildPlugins] : esbuildPlugins,
+          onSuccess,
         })
       })
     })
-
-    console.log(JSON.stringify(exports, null, 2))
 
     return nestedOptions.flat()
   })

@@ -69,7 +69,7 @@ export default defineConfig(
     // Setting `true` will console.log the package.json fields
     printInstructions: true,
     // Setting `true` will write export fields to package.json
-    writeInstructions: true,
+    writePackageJson: true,
   },
 )
 ```

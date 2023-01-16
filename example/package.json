@@ -7,29 +7,96 @@
   ],
   "private": true,
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index/index.server.js",
+  "module": "./dist/index/index.server.js",
   "types": "./dist/index.d.ts",
-  "browser": {},
+  "browser": {
+    "./dist/index/index.server.js": "./dist/index/index.js",
+    "./dist/additional/additional.server.js": "./dist/additional/additional.js",
+    "./dist/additional/additional.server.cjs": "./dist/additional/additional.cjs"
+  },
   "exports": {
-    "solid": {
-      "development": "./dist/index.dev.solid.jsx",
-      "import": "./dist/index.solid.jsx"
-    },
-    "browser": {
-      "development": {
-        "import": "./dist/index.dev.js",
-        "require": "./dist/index.dev.cjs"
+    ".": {
+      "solid": {
+        "development": "./dist/index/index.dev.jsx",
+        "import": "./dist/index/index.jsx"
       },
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "worker": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index/index.server.js"
+        }
+      },
+      "deno": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index/index.server.js"
+        }
+      },
+      "node": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index/index.server.js"
+        }
+      },
+      "browser": {
+        "development": {
+          "import": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index/index.dev.js"
+          }
+        },
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index/index.js"
+        }
+      },
+      "development": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index/index.dev.js"
+        }
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index/index.js"
+      }
     },
-    "development": {
-      "import": "./dist/index.dev.js",
-      "require": "./dist/index.dev.cjs"
-    },
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+    "./additional": {
+      "worker": {
+        "import": {
+          "types": "./dist/additional.d.ts",
+          "default": "./dist/additional/additional.server.js"
+        },
+        "require": "./dist/additional/additional.server.cjs"
+      },
+      "deno": {
+        "import": {
+          "types": "./dist/additional.d.ts",
+          "default": "./dist/additional/additional.server.js"
+        },
+        "require": "./dist/additional/additional.server.cjs"
+      },
+      "node": {
+        "import": {
+          "types": "./dist/additional.d.ts",
+          "default": "./dist/additional/additional.server.js"
+        },
+        "require": "./dist/additional/additional.server.cjs"
+      },
+      "browser": {
+        "import": {
+          "types": "./dist/additional.d.ts",
+          "default": "./dist/additional/additional.js"
+        },
+        "require": "./dist/additional/additional.cjs"
+      },
+      "import": {
+        "types": "./dist/additional.d.ts",
+        "default": "./dist/additional/additional.js"
+      },
+      "require": "./dist/additional/additional.cjs"
+    }
   },
   "scripts": {
     "dev": "vite serve dev",

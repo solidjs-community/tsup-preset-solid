@@ -13,9 +13,10 @@ export default defineConfig(
     },
     {
       entry: 'src/additional.ts',
+      serverEntry: true,
     },
   ],
   {
-    printInstructions: true,
+    writePackageJson: true,
   },
 )
