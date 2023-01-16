@@ -6,15 +6,17 @@
 
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg?style=for-the-badge&logo=pnpm)](https://pnpm.io/)
 
-Preset for building your SolidJS packages using [**tsup**](https://tsup.egoist.dev) _(powered by [**esbuild**](https://esbuild.github.io))_.
+Preset for building your SolidJS packages using [**tsup**](https://tsup.egoist.dev) _(powered by [**esbuild**](https://esbuild.github.io))_ with ease.
 
 ## Features
 
-- **Zero config** - Just install and use it.
+- **Preconfigured** - Just install, set your entries and use it.
 
 - **Fast** - Uses [**esbuild**](https://esbuild.github.io) under the hood.
 
 - **SolidStart support** - Includes `solid` export condition with preserved JSX.
+
+- **Best practices** - Ensures that the built library works well with Solid's tooling ecosystem.
 
 - **Development and server entries** - Creates a separate entry for development, server-side rendering and production form a single source.
 
@@ -64,7 +66,7 @@ export default defineConfig(
   {
     // Setting `true` will console.log the package.json fields
     printInstructions: true,
-    // Setting `true` will write the package.json fields
+    // Setting `true` will write export fields to package.json
     writeInstructions: true,
   },
 )
