@@ -12,7 +12,7 @@ export type PresetOptions = {
   devEntry?: true | undefined | string
   serverEntry?: true | undefined | string
   dropConsole?: true | undefined
-  foramt?: Options['format']
+  foramt?: 'esm' | ('esm' | 'cjs')[]
   outDir?: string | undefined
   tsupOptions?: (config: Options) => Options
 }
@@ -35,9 +35,6 @@ export function defineConfig(
     )
 
     type Browser = Exclude<PackageJson['browser'], string | undefined>
-    type Exports = {
-      [path: string]: PackageJson.Exports
-    }
     const exports: PackageJson = {
       type: 'module',
       browser: {},
@@ -52,8 +49,8 @@ export function defineConfig(
       const mainExport = `${outDir}/${
         isSingleEntry ? entryFilename : `${entryFilename}/${entryFilename}`
       }`
-      const userFormat = options.foramt ?? DEFAULT_FORMAT
-      const hasCjs = userFormat.includes('cjs')
+      const outFormat = options.foramt ?? DEFAULT_FORMAT
+      const hasCjs = outFormat.includes('cjs')
       const hasJSX = options.entry.endsWith('.jsx') || options.entry.endsWith('.tsx')
       const hasDev = !!options.devEntry
       const hasServer = !!options.serverEntry
@@ -75,37 +72,43 @@ export function defineConfig(
           if (hasCjs) b[`${serverExport}.cjs`] = `${mainExport}.cjs`
         }
 
-        function getConditions(type: 'server' | 'main') {
-          const filename = type === 'server' ? serverExport : mainExport
-          return {
+        const getImportConditions = (filename: string) => ({
+          import: {
+            types: typesExport,
+            default: `${filename}.js`,
+          },
+          ...(hasCjs && { require: `${filename}.cjs` }),
+        })
+        const getConditions = (type: 'server' | 'main') =>
+          ({
             ...(hasDev &&
               type === 'main' && {
-                development: {
-                  import: {
-                    types: typesExport,
-                    default: `${devExport}.js`,
-                  },
-                  ...(hasCjs && { require: `${devExport}.cjs` }),
-                },
+                development: getImportConditions(devExport),
               }),
-            import: {
-              types: typesExport,
-              import: `${filename}.js`,
-            },
-            ...(hasCjs && { require: `${filename}.cjs` }),
-          } as const
+            ...getImportConditions(type === 'server' ? serverExport : mainExport),
+          } as const)
+        const allConditions: PackageJson.Exports = {
+          ...(hasJSX && {
+            solid: hasDev
+              ? {
+                  development: `${devExport}.jsx`,
+                  import: `${mainExport}.jsx`,
+                }
+              : `${mainExport}.jsx`,
+          }),
+          ...(hasServer && {
+            worker: getConditions('server'),
+            deno: getConditions('server'),
+            node: getConditions('server'),
+          }),
+          browser: getConditions('main'),
+          ...getConditions('main'),
         }
 
-        ;(exports.exports as Exports)[`${entryFilename === 'index' ? '.' : `./${entryFilename}`}`] =
-          {
-            ...(hasServer && {
-              worker: getConditions('server'),
-              deno: getConditions('server'),
-              node: getConditions('server'),
-            }),
-            browser: getConditions('main'),
-            ...getConditions('main'),
-          }
+        if (isSingleEntry) exports.exports = allConditions
+        else
+          (exports.exports as any)[`${entryFilename === 'index' ? '.' : `./${entryFilename}`}`] =
+            allConditions
       }
 
       const permutations = [{ dev: false, solid: false, server: false }]
@@ -122,7 +125,7 @@ export function defineConfig(
       return permutations.map(({ dev, solid, server }, j) => {
         return handleOptions({
           target: 'esnext',
-          format: solid || watching ? 'esm' : userFormat,
+          format: solid || watching ? 'esm' : outFormat,
           clean: i === 0 && j === 0,
           dts: j === 0 ? options.entry : undefined,
           entry: {

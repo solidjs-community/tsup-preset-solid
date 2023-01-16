@@ -7,8 +7,9 @@ export default defineConfig(
       // devEntry: 'src/dev.tsx',
       // serverEntry: 'src/server.tsx',
       devEntry: true,
-      // serverEntry: true,
+      serverEntry: true,
       dropConsole: true,
+      foramt: 'esm',
     },
     {
       entry: 'src/additional.ts',
