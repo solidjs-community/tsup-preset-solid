@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "name": "tsup-preset-solid",
   "description": "Preset for building your SolidJS package with tsup.",
   "license": "MIT",
