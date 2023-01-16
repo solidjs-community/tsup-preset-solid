@@ -5,6 +5,8 @@
 # tsup-preset-solid
 
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg?style=for-the-badge&logo=pnpm)](https://pnpm.io/)
+[![npm](https://img.shields.io/npm/v/tsup-preset-solid?style=for-the-badge)](https://www.npmjs.com/package/tsup-preset-solid)
+[![downloads](https://img.shields.io/npm/dw/tsup-preset-solid?color=blue&style=for-the-badge)](https://www.npmjs.com/package/tsup-preset-solid)
 
 Preset for building your SolidJS packages with ease using [**tsup**](https://tsup.egoist.dev) _(powered by [**esbuild**](https://esbuild.github.io))_.
 
