@@ -12,7 +12,8 @@ export default defineConfig(
       foramt: 'esm',
     },
     {
-      entry: 'src/additional.ts',
+      name: 'additional',
+      entry: 'src/additional/index.ts',
       serverEntry: true,
     },
   ],

@@ -14,6 +14,7 @@ const isCI =
 const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
 
 export type PresetOptions = {
+  name?: string | undefined
   entry: string
   devEntry?: true | undefined | string
   serverEntry?: true | undefined | string
@@ -82,8 +83,8 @@ export function defineConfig(
       const hasServer = !!entry.serverEntry
 
       const outDir = entry.outDir ? `./${entry.outDir}/` : './dist/'
-      const entryFilename = path.basename(path.normalize(entry.entry)).split('.')[0]
-      const mainExport = `${entryFilename}${entries.length === 1 ? '' : `/${entryFilename}`}`
+      const entryFilename = entry.name ?? path.basename(path.normalize(entry.entry)).split('.')[0]
+      const mainExport = `${entryFilename}${entries.length === 1 ? '' : `/index`}`
       const devExport = `${mainExport}.dev`
       const serverExport = `${mainExport}.server`
       const typesExport = `${entryFilename}.d.ts`

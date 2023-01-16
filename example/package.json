@@ -12,8 +12,8 @@
   "types": "./dist/index.d.ts",
   "browser": {
     "./dist/index/index.server.js": "./dist/index/index.js",
-    "./dist/additional/additional.server.js": "./dist/additional/additional.js",
-    "./dist/additional/additional.server.cjs": "./dist/additional/additional.cjs"
+    "./dist/additional/index.server.js": "./dist/additional/index.js",
+    "./dist/additional/index.server.cjs": "./dist/additional/index.cjs"
   },
   "exports": {
     ".": {
@@ -66,36 +66,36 @@
       "worker": {
         "import": {
           "types": "./dist/additional.d.ts",
-          "default": "./dist/additional/additional.server.js"
+          "default": "./dist/additional/index.server.js"
         },
-        "require": "./dist/additional/additional.server.cjs"
+        "require": "./dist/additional/index.server.cjs"
       },
       "deno": {
         "import": {
           "types": "./dist/additional.d.ts",
-          "default": "./dist/additional/additional.server.js"
+          "default": "./dist/additional/index.server.js"
         },
-        "require": "./dist/additional/additional.server.cjs"
+        "require": "./dist/additional/index.server.cjs"
       },
       "node": {
         "import": {
           "types": "./dist/additional.d.ts",
-          "default": "./dist/additional/additional.server.js"
+          "default": "./dist/additional/index.server.js"
         },
-        "require": "./dist/additional/additional.server.cjs"
+        "require": "./dist/additional/index.server.cjs"
       },
       "browser": {
         "import": {
           "types": "./dist/additional.d.ts",
-          "default": "./dist/additional/additional.js"
+          "default": "./dist/additional/index.js"
         },
-        "require": "./dist/additional/additional.cjs"
+        "require": "./dist/additional/index.cjs"
       },
       "import": {
         "types": "./dist/additional.d.ts",
-        "default": "./dist/additional/additional.js"
+        "default": "./dist/additional/index.js"
       },
-      "require": "./dist/additional/additional.cjs"
+      "require": "./dist/additional/index.cjs"
     }
   },
   "scripts": {
