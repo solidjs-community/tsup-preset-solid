@@ -81,36 +81,36 @@ export function defineConfig(
       const hasDev = !!entry.devEntry
       const hasServer = !!entry.serverEntry
 
-      const outDir = entry.outDir ? `./${entry.outDir}` : './dist'
+      const outDir = entry.outDir ? `./${entry.outDir}/` : './dist/'
       const entryFilename = path.basename(path.normalize(entry.entry)).split('.')[0]
-      const mainExport = `${outDir}/${
-        entries.length === 1 ? entryFilename : `${entryFilename}/${entryFilename}`
-      }`
+      const mainExport = `${entryFilename}${entries.length === 1 ? '' : `/${entryFilename}`}`
       const devExport = `${mainExport}.dev`
       const serverExport = `${mainExport}.server`
-      const typesExport = `${outDir}/${entryFilename}.d.ts`
+      const typesExport = `${entryFilename}.d.ts`
 
       const handleOptions = entry.tsupOptions ?? (o => o)
       const esbuildPlugins = entry.esbuildPlugins ?? []
 
       if (shouldCollectExports) {
         if (i === 0) {
-          exports.main = `${hasServer ? serverExport : mainExport}.${hasCjs ? 'cjs' : 'js'}`
-          exports.module = `${hasServer ? serverExport : mainExport}.js`
-          exports.types = typesExport
+          exports.main = `${outDir}${hasServer ? serverExport : mainExport}.${
+            hasCjs ? 'cjs' : 'js'
+          }`
+          exports.module = `${outDir}${hasServer ? serverExport : mainExport}.js`
+          exports.types = `${outDir}${typesExport}`
         }
         if (hasServer) {
           const b = exports.browser as Browser
-          b[`${serverExport}.js`] = `${mainExport}.js`
-          if (hasCjs) b[`${serverExport}.cjs`] = `${mainExport}.cjs`
+          b[`${outDir}${serverExport}.js`] = `${outDir}${mainExport}.js`
+          if (hasCjs) b[`${outDir}${serverExport}.cjs`] = `${outDir}${mainExport}.cjs`
         }
 
         const getImportConditions = (filename: string) => ({
           import: {
-            types: typesExport,
-            default: `${filename}.js`,
+            types: `${outDir}${typesExport}`,
+            default: `${outDir}${filename}.js`,
           },
-          ...(hasCjs && { require: `${filename}.cjs` }),
+          ...(hasCjs && { require: `${outDir}${filename}.cjs` }),
         })
         const getConditions = (type: 'server' | 'main') =>
           ({
@@ -124,10 +124,10 @@ export function defineConfig(
           ...(hasJSX && {
             solid: hasDev
               ? {
-                  development: `${devExport}.jsx`,
-                  import: `${mainExport}.jsx`,
+                  development: `${outDir}${devExport}.jsx`,
+                  import: `${outDir}${mainExport}.jsx`,
                 }
-              : `${mainExport}.jsx`,
+              : `${outDir}${mainExport}.jsx`,
           }),
           ...(hasServer && {
             worker: getConditions('server'),
