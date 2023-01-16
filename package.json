@@ -26,6 +26,7 @@
     "postinstall": "pnpm build",
     "test": "echo \"test not setup\"",
     "build": "tsup",
+    "prepublish": "pnpm build",
     "typecheck": "tsc --noEmit",
     "format": "prettier -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"example/**/*.{js,ts,json,css,tsx,jsx}\"",
     "lint": "eslint --ignore-path .gitignore --max-warnings 0 src/**/*.{js,ts,tsx,jsx}",
