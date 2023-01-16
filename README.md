@@ -6,7 +6,7 @@
 
 [![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-cc00ff.svg?style=for-the-badge&logo=pnpm)](https://pnpm.io/)
 
-Preset for building your SolidJS packages using [**tsup**](https://tsup.egoist.dev) _(powered by [**esbuild**](https://esbuild.github.io))_ with ease.
+Preset for building your SolidJS packages with ease using [**tsup**](https://tsup.egoist.dev) _(powered by [**esbuild**](https://esbuild.github.io))_.
 
 ## Features
 
