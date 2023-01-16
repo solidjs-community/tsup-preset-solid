@@ -113,23 +113,25 @@ export function defineConfig(
           },
           ...(hasCjs && { require: `${outDir}${filename}.cjs` }),
         })
-        const getConditions = (type: 'server' | 'main') =>
-          ({
-            ...(hasDev &&
-              type === 'main' && {
-                development: getImportConditions(devExport),
-              }),
-            ...getImportConditions(type === 'server' ? serverExport : mainExport),
-          } as const)
+        const getConditions = (type: 'server' | 'main') => {
+          const filename = type === 'server' ? serverExport : mainExport
+          const dev = hasDev && type === 'main'
+          return {
+            ...(hasJSX && {
+              solid: dev
+                ? {
+                    development: `${outDir}${devExport}.jsx`,
+                    import: `${outDir}${filename}.jsx`,
+                  }
+                : `${outDir}${filename}.jsx`,
+            }),
+            ...(dev && {
+              development: getImportConditions(devExport),
+            }),
+            ...getImportConditions(filename),
+          } as const
+        }
         const allConditions: PackageJson.Exports = {
-          ...(hasJSX && {
-            solid: hasDev
-              ? {
-                  development: `${outDir}${devExport}.jsx`,
-                  import: `${outDir}${mainExport}.jsx`,
-                }
-              : `${outDir}${mainExport}.jsx`,
-          }),
           ...(hasServer && {
             worker: getConditions('server'),
             deno: getConditions('server'),

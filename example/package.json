@@ -1,5 +1,5 @@
 {
-  "version": "0.0.0",
+  "version": "0.0.1",
   "name": "example-package",
   "license": "MIT",
   "files": [
@@ -17,23 +17,22 @@
   },
   "exports": {
     ".": {
-      "solid": {
-        "development": "./dist/index/index.dev.jsx",
-        "import": "./dist/index/index.jsx"
-      },
       "worker": {
+        "solid": "./dist/index/index.server.jsx",
         "import": {
           "types": "./dist/index.d.ts",
           "default": "./dist/index/index.server.js"
         }
       },
       "deno": {
+        "solid": "./dist/index/index.server.jsx",
         "import": {
           "types": "./dist/index.d.ts",
           "default": "./dist/index/index.server.js"
         }
       },
       "node": {
+        "solid": "./dist/index/index.server.jsx",
         "import": {
           "types": "./dist/index.d.ts",
           "default": "./dist/index/index.server.js"
@@ -41,22 +40,26 @@
       },
       "browser": {
         "development": {
+          "solid": "./dist/index/index.dev.jsx",
           "import": {
             "types": "./dist/index.d.ts",
             "default": "./dist/index/index.dev.js"
           }
         },
+        "solid": "./dist/index/index.jsx",
         "import": {
           "types": "./dist/index.d.ts",
           "default": "./dist/index/index.js"
         }
       },
       "development": {
+        "solid": "./dist/index/index.dev.jsx",
         "import": {
           "types": "./dist/index.d.ts",
           "default": "./dist/index/index.dev.js"
         }
       },
+      "solid": "./dist/index/index.jsx",
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index/index.js"
