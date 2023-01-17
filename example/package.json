@@ -7,14 +7,12 @@
   ],
   "private": true,
   "type": "module",
-  "main": "./dist/index/server.cjs",
+  "main": "./dist/index/server.js",
   "module": "./dist/index/server.js",
   "types": "./dist/index/index.d.ts",
   "browser": {
     "./dist/index/server.js": "./dist/index/index.js",
-    "./dist/index/server.cjs": "./dist/index/index.cjs",
-    "./dist/additional/server.js": "./dist/additional/index.js",
-    "./dist/additional/server.cjs": "./dist/additional/index.cjs"
+    "./dist/additional/server.js": "./dist/additional/index.js"
   },
   "exports": {
     ".": {
@@ -23,24 +21,21 @@
         "import": {
           "types": "./dist/index/index.d.ts",
           "default": "./dist/index/server.js"
-        },
-        "require": "./dist/index/server.cjs"
+        }
       },
       "deno": {
         "solid": "./dist/index/server.jsx",
         "import": {
           "types": "./dist/index/index.d.ts",
           "default": "./dist/index/server.js"
-        },
-        "require": "./dist/index/server.cjs"
+        }
       },
       "node": {
         "solid": "./dist/index/server.jsx",
         "import": {
           "types": "./dist/index/index.d.ts",
           "default": "./dist/index/server.js"
-        },
-        "require": "./dist/index/server.cjs"
+        }
       },
       "browser": {
         "solid": {
@@ -51,14 +46,12 @@
           "import": {
             "types": "./dist/index/index.d.ts",
             "default": "./dist/index/dev.js"
-          },
-          "require": "./dist/index/dev.cjs"
+          }
         },
         "import": {
           "types": "./dist/index/index.d.ts",
           "default": "./dist/index/index.js"
-        },
-        "require": "./dist/index/index.cjs"
+        }
       },
       "solid": {
         "development": "./dist/index/dev.jsx",
@@ -68,63 +61,64 @@
         "import": {
           "types": "./dist/index/index.d.ts",
           "default": "./dist/index/dev.js"
-        },
-        "require": "./dist/index/dev.cjs"
+        }
       },
       "import": {
         "types": "./dist/index/index.d.ts",
         "default": "./dist/index/index.js"
-      },
-      "require": "./dist/index/index.cjs"
+      }
     },
     "./additional": {
       "worker": {
         "import": {
           "types": "./dist/additional/index.d.ts",
           "default": "./dist/additional/server.js"
-        },
-        "require": "./dist/additional/server.cjs"
+        }
       },
       "deno": {
         "import": {
           "types": "./dist/additional/index.d.ts",
           "default": "./dist/additional/server.js"
-        },
-        "require": "./dist/additional/server.cjs"
+        }
       },
       "node": {
         "import": {
           "types": "./dist/additional/index.d.ts",
           "default": "./dist/additional/server.js"
-        },
-        "require": "./dist/additional/server.cjs"
+        }
       },
       "browser": {
         "import": {
           "types": "./dist/additional/index.d.ts",
           "default": "./dist/additional/index.js"
-        },
-        "require": "./dist/additional/index.cjs"
+        }
       },
       "import": {
         "types": "./dist/additional/index.d.ts",
         "default": "./dist/additional/index.js"
-      },
-      "require": "./dist/additional/index.cjs"
+      }
     },
     "./shared": {
       "browser": {
         "import": {
           "types": "./dist/shared/index.d.ts",
           "default": "./dist/shared/index.js"
-        },
-        "require": "./dist/shared/index.cjs"
+        }
       },
       "import": {
         "types": "./dist/shared/index.d.ts",
         "default": "./dist/shared/index.js"
-      },
-      "require": "./dist/shared/index.cjs"
+      }
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "./additional": [
+        "./dist/additional/index.d.ts"
+      ],
+      "./shared": [
+        "./dist/shared/index.d.ts"
+      ]
     }
   },
   "scripts": {

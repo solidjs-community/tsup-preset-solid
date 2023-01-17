@@ -17,7 +17,7 @@ export type GlobalOptions = {
   dropConsole?: true | undefined
   tsupOptions?: (config: Options) => Options
   esbuildPlugins?: Options['esbuildPlugins']
-  cjs?: false | undefined
+  cjs?: true | undefined
 }
 
 const CWD = process.cwd()
@@ -37,7 +37,7 @@ export function defineConfig(
   return tsupDefineConfig(config => {
     const userEntries = asArray(entryOptions)
     const watching = !CI && !!config.watch
-    const hasCjs = globalOptions.cjs !== false
+    const hasCjs = globalOptions.cjs === true
     const libFormat: Options['format'] = hasCjs ? ['esm', 'cjs'] : 'esm'
     const outDir = './dist/'
 
@@ -46,12 +46,7 @@ export function defineConfig(
     const shouldCollectExports =
       !CI && !watching && !!(globalOptions?.writePackageJson || globalOptions?.printInstructions)
 
-    type Browser = Exclude<PackageJson['browser'], string | undefined>
-    const exports: PackageJson = {
-      browser: {},
-      exports: {},
-    }
-
+    const pkgfields: PackageJson = { browser: {}, exports: {}, typesVersions: {} }
     let buildsToComplete = watching ? Infinity : 0
     // Handle the last build to write the package.json
     async function onSuccess() {
@@ -61,7 +56,7 @@ export function defineConfig(
         // eslint-disable-next-line no-console
         console.log(
           `\nTo use these exports, add the following to your package.json:\n\n${JSON.stringify(
-            exports,
+            pkgfields,
             null,
             2,
           )}\n`,
@@ -70,7 +65,7 @@ export function defineConfig(
 
       if (globalOptions.writePackageJson) {
         const pkg: PackageJson = await fsp.readFile(PKG_PATH, 'utf-8').then(JSON.parse)
-        const newPkg = { ...pkg, ...exports }
+        const newPkg = { ...pkg, ...pkgfields }
         await fsp.writeFile(PKG_PATH, JSON.stringify(newPkg, null, 2) + '\n', 'utf-8')
       }
     }
@@ -112,43 +107,52 @@ export function defineConfig(
     // generate package.json exports
     //
     if (shouldCollectExports) {
+      type Browser = Exclude<PackageJson['browser'], string | undefined>
+
+      // "typeVersions" are for older versions of ts, but are still needed for some tools
+      // They are only needed if there are multiple entries
+      const typesVersions: NonNullable<NonNullable<PackageJson['typesVersions']>[string]> = {}
+      if (userEntries.length !== 1) pkgfields.typesVersions = { '*': typesVersions }
+
       parsedEntires.forEach((e, i) => {
+        const exports = {
+          server: `${outDir}${e.serverExport}`,
+          dev: `${outDir}${e.devExport}`,
+          main: `${outDir}${e.mainExport}`,
+          types: `${outDir}${e.typesExport}`,
+        }
+
         if (i === 0) {
-          exports.main = `${outDir}${e.hasServer ? e.serverExport : e.mainExport}.${
-            hasCjs ? 'cjs' : 'js'
-          }`
-          exports.module = `${outDir}${e.hasServer ? e.serverExport : e.mainExport}.js`
-          exports.types = `${outDir}${e.typesExport}`
+          pkgfields.main = `${e.hasServer ? exports.server : exports.main}.${hasCjs ? 'cjs' : 'js'}`
+          pkgfields.module = `${e.hasServer ? exports.server : exports.main}.js`
+          pkgfields.types = exports.types
         }
         if (e.hasServer) {
-          const b = exports.browser as Browser
-          b[`${outDir}${e.serverExport}.js`] = `${outDir}${e.mainExport}.js`
-          if (hasCjs) b[`${outDir}${e.serverExport}.cjs`] = `${outDir}${e.mainExport}.cjs`
+          const b = pkgfields.browser as Browser
+          b[`${exports.server}.js`] = `${exports.main}.js`
+          if (hasCjs) b[`${exports.server}.cjs`] = `${exports.main}.cjs`
         }
 
         const getImportConditions = (filename: string) => ({
           import: {
-            types: `${outDir}${e.typesExport}`,
-            default: `${outDir}${filename}.js`,
+            types: exports.types,
+            default: `${filename}.js`,
           },
-          ...(hasCjs && { require: `${outDir}${filename}.cjs` }),
+          ...(hasCjs && { require: `${filename}.cjs` }),
         })
         const getConditions = (type: 'server' | 'main') => {
-          const filename = type === 'server' ? e.serverExport : e.mainExport
           const dev = e.hasDev && type === 'main'
           return {
             ...(e.hasJSX && {
               solid: dev
                 ? {
-                    development: `${outDir}${e.devExport}.jsx`,
-                    import: `${outDir}${filename}.jsx`,
+                    development: `${exports.dev}.jsx`,
+                    import: `${exports[type]}.jsx`,
                   }
-                : `${outDir}${filename}.jsx`,
+                : `${exports[type]}.jsx`,
             }),
-            ...(dev && {
-              development: getImportConditions(e.devExport),
-            }),
-            ...getImportConditions(filename),
+            ...(dev && { development: getImportConditions(exports.dev) }),
+            ...getImportConditions(exports[type]),
           } as const
         }
         const allConditions: PackageJson.Exports = {
@@ -161,11 +165,13 @@ export function defineConfig(
           ...getConditions('main'),
         }
 
-        if (userEntries.length === 1) exports.exports = allConditions
-        else {
-          ;(exports.exports as any)[
-            `${e.entryFilename === 'index' ? '.' : `./${e.entryFilename}`}`
-          ] = allConditions
+        if (userEntries.length === 1) {
+          pkgfields.exports = allConditions
+        } else if (e.entryFilename === 'index') {
+          ;(pkgfields.exports as any)['.'] = allConditions
+        } else {
+          ;(pkgfields.exports as any)[`./${e.entryFilename}`] = allConditions
+          typesVersions[`./${e.entryFilename}`] = [exports.types]
         }
       })
     }
