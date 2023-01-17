@@ -248,6 +248,7 @@ export function defineConfig(
             'import.meta.env.SSR': server ? 'true' : 'false',
           }
           esbuildOptions.jsx = 'preserve'
+          esbuildOptions.chunkNames = 'chunks/[name]-[hash]'
 
           if (!dev && globalOptions.dropConsole) esbuildOptions.drop = ['console', 'debugger']
 

@@ -10,8 +10,8 @@ export default defineConfig(
       serverEntry: true,
     },
     {
-      // name: 'additional',
-      entry: 'src/additional/additional.ts',
+      name: 'additional',
+      entry: 'src/additional/index.ts',
       // devEntry: true,
       serverEntry: true,
     },
