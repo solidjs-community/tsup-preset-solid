@@ -55,10 +55,6 @@ export default defineConfig(
       devEntry: true,
       // Setting `true` will generate a server-only entry
       serverEntry: true,
-      // Setting `true` will remove all `console.*` calls and `debugger` statements
-      dropConsole: true,
-      // Format is ['esm', 'cjs'] by default
-      foramt: 'esm',
     },
     {
       entry: 'src/additional.ts',
@@ -70,6 +66,10 @@ export default defineConfig(
     printInstructions: true,
     // Setting `true` will write export fields to package.json
     writePackageJson: true,
+    // Setting `true` will remove all `console.*` calls and `debugger` statements
+    dropConsole: true,
+    // Enable CJS output (default: false)
+    cjs: true,
   },
 )
 ```
@@ -84,3 +84,13 @@ export default defineConfig(
   }
 }
 ```
+
+## Usage gotchas
+
+1. **`solid` export condition** - This preset will automatically add `solid` export condition to your `package.json` if you have any `.tsx` entry files. This is required for SolidStart to work properly.
+
+2. **"type": "module"** - This preset requires your package to be a module.
+
+3. **Needs ESM** - This preset requires your package to be ESM. If you want to support CJS additionally, you can set `cjs: true` in the options. Other export format are not supported.
+
+4. **development-only `solid` export issue** - Currently SolidStart has an issue with `development` and `solid` export condition. ([solid-start issue](https://github.com/solidjs/solid-start/issues/651))
