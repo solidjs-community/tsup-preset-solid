@@ -208,19 +208,12 @@ export function defineConfig(
     return permutations.map(({ dev, jsx, server, entries }, i) => {
       const main = !dev && !jsx && !server
 
-      const getDtsRecord = () => {
-        const record: Record<string, string> = {}
-        for (const entry of entries) {
-          record[entry.entryFilename] = entry.options.entry
-        }
-        return record
-      }
-
       return tsupOptions({
         target: 'esnext',
+        platform: server ? 'node' : 'browser',
         format: watching || jsx ? 'esm' : libFormat,
         clean: i === 0,
-        dts: main ? getDtsRecord() : undefined,
+        dts: main ? true : undefined,
         entry: (() => {
           const record: Record<string, string> = {}
           for (const e of entries) {
