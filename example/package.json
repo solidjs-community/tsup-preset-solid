@@ -7,98 +7,124 @@
   ],
   "private": true,
   "type": "module",
-  "main": "./dist/index/index.server.js",
-  "module": "./dist/index/index.server.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index/server.cjs",
+  "module": "./dist/index/server.js",
+  "types": "./dist/index/index.d.ts",
   "browser": {
-    "./dist/index/index.server.js": "./dist/index/index.js",
-    "./dist/additional/index.server.js": "./dist/additional/index.js",
-    "./dist/additional/index.server.cjs": "./dist/additional/index.cjs"
+    "./dist/index/server.js": "./dist/index/index.js",
+    "./dist/index/server.cjs": "./dist/index/index.cjs",
+    "./dist/additional/server.js": "./dist/additional/index.js",
+    "./dist/additional/server.cjs": "./dist/additional/index.cjs"
   },
   "exports": {
     ".": {
       "worker": {
-        "solid": "./dist/index/index.server.jsx",
+        "solid": "./dist/index/server.jsx",
         "import": {
-          "types": "./dist/index.d.ts",
-          "default": "./dist/index/index.server.js"
-        }
+          "types": "./dist/index/index.d.ts",
+          "default": "./dist/index/server.js"
+        },
+        "require": "./dist/index/server.cjs"
       },
       "deno": {
-        "solid": "./dist/index/index.server.jsx",
+        "solid": "./dist/index/server.jsx",
         "import": {
-          "types": "./dist/index.d.ts",
-          "default": "./dist/index/index.server.js"
-        }
+          "types": "./dist/index/index.d.ts",
+          "default": "./dist/index/server.js"
+        },
+        "require": "./dist/index/server.cjs"
       },
       "node": {
-        "solid": "./dist/index/index.server.jsx",
+        "solid": "./dist/index/server.jsx",
         "import": {
-          "types": "./dist/index.d.ts",
-          "default": "./dist/index/index.server.js"
-        }
+          "types": "./dist/index/index.d.ts",
+          "default": "./dist/index/server.js"
+        },
+        "require": "./dist/index/server.cjs"
       },
       "browser": {
-        "development": {
-          "solid": "./dist/index/index.dev.jsx",
-          "import": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index/index.dev.js"
-          }
+        "solid": {
+          "development": "./dist/index/dev.jsx",
+          "import": "./dist/index/index.jsx"
         },
-        "solid": "./dist/index/index.jsx",
+        "development": {
+          "import": {
+            "types": "./dist/index/index.d.ts",
+            "default": "./dist/index/dev.js"
+          },
+          "require": "./dist/index/dev.cjs"
+        },
         "import": {
-          "types": "./dist/index.d.ts",
+          "types": "./dist/index/index.d.ts",
           "default": "./dist/index/index.js"
-        }
+        },
+        "require": "./dist/index/index.cjs"
+      },
+      "solid": {
+        "development": "./dist/index/dev.jsx",
+        "import": "./dist/index/index.jsx"
       },
       "development": {
-        "solid": "./dist/index/index.dev.jsx",
         "import": {
-          "types": "./dist/index.d.ts",
-          "default": "./dist/index/index.dev.js"
-        }
+          "types": "./dist/index/index.d.ts",
+          "default": "./dist/index/dev.js"
+        },
+        "require": "./dist/index/dev.cjs"
       },
-      "solid": "./dist/index/index.jsx",
       "import": {
-        "types": "./dist/index.d.ts",
+        "types": "./dist/index/index.d.ts",
         "default": "./dist/index/index.js"
-      }
+      },
+      "require": "./dist/index/index.cjs"
     },
     "./additional": {
       "worker": {
         "import": {
-          "types": "./dist/additional.d.ts",
-          "default": "./dist/additional/index.server.js"
+          "types": "./dist/additional/index.d.ts",
+          "default": "./dist/additional/server.js"
         },
-        "require": "./dist/additional/index.server.cjs"
+        "require": "./dist/additional/server.cjs"
       },
       "deno": {
         "import": {
-          "types": "./dist/additional.d.ts",
-          "default": "./dist/additional/index.server.js"
+          "types": "./dist/additional/index.d.ts",
+          "default": "./dist/additional/server.js"
         },
-        "require": "./dist/additional/index.server.cjs"
+        "require": "./dist/additional/server.cjs"
       },
       "node": {
         "import": {
-          "types": "./dist/additional.d.ts",
-          "default": "./dist/additional/index.server.js"
+          "types": "./dist/additional/index.d.ts",
+          "default": "./dist/additional/server.js"
         },
-        "require": "./dist/additional/index.server.cjs"
+        "require": "./dist/additional/server.cjs"
       },
       "browser": {
         "import": {
-          "types": "./dist/additional.d.ts",
+          "types": "./dist/additional/index.d.ts",
           "default": "./dist/additional/index.js"
         },
         "require": "./dist/additional/index.cjs"
       },
       "import": {
-        "types": "./dist/additional.d.ts",
+        "types": "./dist/additional/index.d.ts",
         "default": "./dist/additional/index.js"
       },
       "require": "./dist/additional/index.cjs"
+    },
+    "./shared": {
+      "browser": {
+        "import": {
+          "types": "./dist/shared/index.d.ts",
+          "default": "./dist/shared/index.js"
+        },
+        "require": "./dist/shared/index.cjs"
+      },
+      "import": {
+        "types": "./dist/shared/index.d.ts",
+        "default": "./dist/shared/index.js"
+      },
+      "require": "./dist/shared/index.cjs"
     }
   },
   "scripts": {

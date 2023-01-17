@@ -8,16 +8,20 @@ export default defineConfig(
       // serverEntry: 'src/server.tsx',
       devEntry: true,
       serverEntry: true,
-      dropConsole: true,
-      foramt: 'esm',
     },
     {
-      name: 'additional',
-      entry: 'src/additional/index.ts',
+      // name: 'additional',
+      entry: 'src/additional/additional.ts',
+      // devEntry: true,
       serverEntry: true,
+    },
+    {
+      entry: 'src/shared.ts',
     },
   ],
   {
     writePackageJson: true,
+    // printInstructions: true,
+    dropConsole: true,
   },
 )
