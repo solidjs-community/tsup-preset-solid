@@ -6,18 +6,27 @@ import type { PackageJson } from 'type-fest'
 
 export type EntryOptions = {
   name?: string | undefined
+  /** entries with '.tsx' extension will have `solid` export condition generated */
   entry: string
-  devEntry?: true | undefined | string
-  serverEntry?: true | undefined | string
+  /** Setting `true` will generate a development-only entry (default: `false`) */
+  devEntry?: boolean | string
+  /** Setting `true` will generate a server-only entry (default: `false`) */
+  serverEntry?: boolean | string
 }
 
 export type GlobalOptions = {
-  writePackageJson?: true | undefined
-  printInstructions?: true | undefined
-  dropConsole?: true | undefined
+  /** Setting `true` will write export fields to package.json (default: `false`) */
+  writePackageJson?: boolean | undefined
+  /** Setting `true` will console.log the package.json fields (default: `false`)  */
+  printInstructions?: boolean | undefined
+  /** Setting `true` will remove all `console.*` calls and `debugger` statements (default: `false`) */
+  dropConsole?: boolean | undefined
   tsupOptions?: (config: Options) => Options
+  esbuildOptions?: Options['esbuildOptions']
+  /** Additional esbuild plugins (solid one is already included) */
   esbuildPlugins?: Options['esbuildPlugins']
-  cjs?: true | undefined
+  /** Setting `true` will generate a CommonJS build alongside ESM (default: `false`) */
+  cjs?: boolean | undefined
 }
 
 const CWD = process.cwd()
@@ -37,11 +46,13 @@ export function defineConfig(
   return tsupDefineConfig(config => {
     const userEntries = asArray(entryOptions)
     const watching = !CI && !!config.watch
-    const hasCjs = globalOptions.cjs === true
+    const hasCjs = !!globalOptions.cjs
     const libFormat: Options['format'] = hasCjs ? ['esm', 'cjs'] : 'esm'
     const outDir = './dist/'
 
     const tsupOptions = globalOptions.tsupOptions ?? (x => x)
+    const esbuildOptions = globalOptions.esbuildOptions ?? (x => x)
+    const esbuildPlugins = globalOptions.esbuildPlugins ?? []
 
     const shouldCollectExports =
       !CI && !watching && !!(globalOptions?.writePackageJson || globalOptions?.printInstructions)
@@ -228,9 +239,9 @@ export function defineConfig(
         })(),
         treeshake: watching ? false : { preset: 'safest' },
         replaceNodeEnv: true,
-        esbuildOptions(esbuildOptions) {
-          esbuildOptions.define = {
-            ...esbuildOptions.define,
+        esbuildOptions(esOptions, ctx) {
+          esOptions.define = {
+            ...esOptions.define,
             'process.env.NODE_ENV': dev ? `"development"` : `"production"`,
             'process.env.PROD': dev ? 'false' : 'true',
             'process.env.DEV': dev ? 'true' : 'false',
@@ -240,18 +251,18 @@ export function defineConfig(
             'import.meta.env.DEV': dev ? 'true' : 'false',
             'import.meta.env.SSR': server ? 'true' : 'false',
           }
-          esbuildOptions.jsx = 'preserve'
-          esbuildOptions.chunkNames = 'chunks/[name]-[hash]'
+          esOptions.jsx = 'preserve'
+          esOptions.chunkNames = 'chunks/[name]-[hash]'
 
-          if (!dev && globalOptions.dropConsole) esbuildOptions.drop = ['console', 'debugger']
+          if (!dev && globalOptions.dropConsole) esOptions.drop = ['console', 'debugger']
 
-          return esbuildOptions
+          return esbuildOptions(esOptions, ctx)
         },
         outExtension({ format }) {
           if (format === 'esm' && jsx) return { js: '.jsx' }
           return {}
         },
-        esbuildPlugins: !jsx ? [solidPlugin() as any] : undefined,
+        esbuildPlugins: !jsx ? [solidPlugin() as any, ...esbuildPlugins] : esbuildPlugins,
         onSuccess,
       })
     })

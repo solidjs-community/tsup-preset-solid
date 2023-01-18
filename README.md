@@ -68,7 +68,7 @@ export default defineConfig(
     writePackageJson: true,
     // Setting `true` will remove all `console.*` calls and `debugger` statements
     dropConsole: true,
-    // Enable CJS output (default: false)
+    // Setting `true` will generate a CommonJS build alongside ESM (default: `false`)
     cjs: true,
   },
 )
