@@ -169,10 +169,10 @@ export function defineConfig(
         const allConditions: PackageJson.Exports = {
           ...(e.hasServer && {
             worker: getConditions('server'),
+            browser: getConditions('main'),
             deno: getConditions('server'),
             node: getConditions('server'),
           }),
-          browser: getConditions('main'),
           ...getConditions('main'),
         }
 
