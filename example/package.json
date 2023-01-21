@@ -23,20 +23,6 @@
           "default": "./dist/index/server.js"
         }
       },
-      "deno": {
-        "solid": "./dist/index/server.jsx",
-        "import": {
-          "types": "./dist/index/index.d.ts",
-          "default": "./dist/index/server.js"
-        }
-      },
-      "node": {
-        "solid": "./dist/index/server.jsx",
-        "import": {
-          "types": "./dist/index/index.d.ts",
-          "default": "./dist/index/server.js"
-        }
-      },
       "browser": {
         "solid": {
           "development": "./dist/index/dev.jsx",
@@ -51,6 +37,20 @@
         "import": {
           "types": "./dist/index/index.d.ts",
           "default": "./dist/index/index.js"
+        }
+      },
+      "deno": {
+        "solid": "./dist/index/server.jsx",
+        "import": {
+          "types": "./dist/index/index.d.ts",
+          "default": "./dist/index/server.js"
+        }
+      },
+      "node": {
+        "solid": "./dist/index/server.jsx",
+        "import": {
+          "types": "./dist/index/index.d.ts",
+          "default": "./dist/index/server.js"
         }
       },
       "solid": {
@@ -75,6 +75,12 @@
           "default": "./dist/additional/server.js"
         }
       },
+      "browser": {
+        "import": {
+          "types": "./dist/additional/index.d.ts",
+          "default": "./dist/additional/index.js"
+        }
+      },
       "deno": {
         "import": {
           "types": "./dist/additional/index.d.ts",
@@ -87,24 +93,12 @@
           "default": "./dist/additional/server.js"
         }
       },
-      "browser": {
-        "import": {
-          "types": "./dist/additional/index.d.ts",
-          "default": "./dist/additional/index.js"
-        }
-      },
       "import": {
         "types": "./dist/additional/index.d.ts",
         "default": "./dist/additional/index.js"
       }
     },
     "./shared": {
-      "browser": {
-        "import": {
-          "types": "./dist/shared/index.d.ts",
-          "default": "./dist/shared/index.js"
-        }
-      },
       "import": {
         "types": "./dist/shared/index.d.ts",
         "default": "./dist/shared/index.js"

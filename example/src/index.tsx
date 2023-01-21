@@ -3,7 +3,9 @@ import { additional } from './additional'
 import { $SYMBOL, SharedEnum } from './shared'
 
 export function createHello(): [Accessor<string>, (to: string) => void] {
-  const [hello, setHello] = createSignal('Hello World!')
+  const [hello, setHello] = createSignal(
+    `Hello ${import.meta.env.SSR ? 'Server' : import.meta.env.DEV ? 'Browser Dev' : 'Browser'}!`,
+  )
 
   return [hello, (to: string) => setHello(`Hello ${to}!`)]
 }
