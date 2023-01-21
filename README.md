@@ -87,10 +87,30 @@ export default defineConfig(
 
 ## Usage gotchas
 
-1. **`solid` export condition** - This preset will automatically add `solid` export condition to your `package.json` if you have any `.tsx` entry files. This is required for SolidStart to work properly.
+1. **`solid` export condition**
 
-2. **"type": "module"** - This preset requires your package to be a module.
+   This preset will automatically add `solid` export condition to your `package.json` if you have any `.tsx` entry files. This is required for SolidStart to work properly.
 
-3. **Needs ESM** - This preset requires your package to be ESM. If you want to support CJS additionally, you can set `cjs: true` in the options. Other export format are not supported.
+2. **"type": "module"**
 
-4. **development-only `solid` export issue** - Currently SolidStart has an issue with `development` and `solid` export condition. ([solid-start issue](https://github.com/solidjs/solid-start/issues/651))
+   This preset requires your package to be a module.
+
+3. **Needs ESM**
+
+   This preset requires your package to be ESM. If you want to support CJS additionally, you can set `cjs: true` in the options. Other export format are not supported.
+
+4. **development-only `solid` export issue**
+
+   Currently SolidStart has an issue with `development` and `solid` export condition. ([solid-start issue](https://github.com/solidjs/solid-start/issues/651))
+
+   This can be "fixed" by overriding the `@rollup/plugin-node-resolve` dependency in your `package.json`:
+
+   ```json
+   {
+     "pnpm": {
+       "overrides": {
+         "@rollup/plugin-node-resolve": "13.3.0"
+       }
+     }
+   }
+   ```
