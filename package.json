@@ -58,8 +58,5 @@
     "solidjs",
     "solid-js"
   ],
-  "packageManager": "pnpm@7.20.0",
-  "engines": {
-    "node": ">=18"
-  }
+  "packageManager": "pnpm@7.20.0"
 }
