@@ -239,6 +239,7 @@ export function defineConfig(
         })(),
         treeshake: watching ? false : { preset: 'safest' },
         replaceNodeEnv: true,
+        keepNames: true,
         esbuildOptions(esOptions, ctx) {
           esOptions.define = {
             ...esOptions.define,
@@ -252,7 +253,8 @@ export function defineConfig(
             'import.meta.env.SSR': server ? 'true' : 'false',
           }
           esOptions.jsx = 'preserve'
-          esOptions.chunkNames = 'chunks/[name]-[hash]'
+
+          esOptions.chunkNames = '[name]/[hash]'
 
           if (!dev && globalOptions.dropConsole) esOptions.drop = ['console', 'debugger']
 
