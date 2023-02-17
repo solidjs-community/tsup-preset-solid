@@ -239,7 +239,6 @@ export function defineConfig(
         })(),
         treeshake: watching ? false : { preset: 'safest' },
         replaceNodeEnv: true,
-        keepNames: true,
         esbuildOptions(esOptions, ctx) {
           esOptions.define = {
             ...esOptions.define,
