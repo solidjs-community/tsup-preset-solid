@@ -182,7 +182,7 @@ export function defineConfig(
           ;(pkgfields.exports as any)['.'] = allConditions
         } else {
           ;(pkgfields.exports as any)[`./${e.entryFilename}`] = allConditions
-          typesVersions[`./${e.entryFilename}`] = [exports.types]
+          typesVersions[e.entryFilename] = [exports.types]
         }
       })
     }
