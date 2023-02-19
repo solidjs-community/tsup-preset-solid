@@ -223,7 +223,7 @@ export function defineConfig(
         target: 'esnext',
         platform: server ? 'node' : 'browser',
         format: watching || jsx ? 'esm' : libFormat,
-        clean: !watching && i === 0 ,
+        clean: !watching && i === 0,
         dts: main ? true : undefined,
         entry: (() => {
           const record: Record<string, string> = {}
