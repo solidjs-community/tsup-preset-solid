@@ -263,7 +263,9 @@ export function defineConfig(
           if (format === 'esm' && jsx) return { js: '.jsx' }
           return {}
         },
-        esbuildPlugins: !jsx ? [solidPlugin({ solid: { generate: server ? "ssr" : "dom" } }) as any, ...esbuildPlugins] : esbuildPlugins,
+        esbuildPlugins: !jsx
+          ? [solidPlugin({ solid: { generate: server ? 'ssr' : 'dom' } }) as any, ...esbuildPlugins]
+          : esbuildPlugins,
         onSuccess,
       })
     })
