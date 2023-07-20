@@ -34,4 +34,4 @@ export const Hello: Component<{ to?: string }> = props => {
   )
 }
 
-export { SharedEnum, $SYMBOL }
+export { $SYMBOL, SharedEnum }

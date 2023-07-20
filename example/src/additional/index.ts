@@ -7,4 +7,4 @@ export const additional = () => {
   window.alert('additional')
 }
 
-export { SharedEnum, $SYMBOL }
+export { $SYMBOL, SharedEnum }

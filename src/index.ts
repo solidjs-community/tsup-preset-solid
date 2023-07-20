@@ -1,7 +1,7 @@
 import { solidPlugin } from 'esbuild-plugin-solid'
 import fsp from 'fs/promises'
 import path from 'path'
-import { defineConfig as tsupDefineConfig, Options } from 'tsup'
+import { Options, defineConfig as tsupDefineConfig } from 'tsup'
 import type { PackageJson } from 'type-fest'
 
 export type EntryOptions = {
