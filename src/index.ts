@@ -1,33 +1,9 @@
-import { solidPlugin } from 'esbuild-plugin-solid'
 import fsp from 'fs/promises'
 import path from 'path'
-import { Options, defineConfig as tsupDefineConfig } from 'tsup'
-import type { PackageJson } from 'type-fest'
-
-export type EntryOptions = {
-    name?: string | undefined
-    /** entries with '.tsx' extension will have `solid` export condition generated */
-    entry: string
-    /** Setting `true` will generate a development-only entry (default: `false`) */
-    devEntry?: boolean | string
-    /** Setting `true` will generate a server-only entry (default: `false`) */
-    serverEntry?: boolean | string
-}
-
-export type GlobalOptions = {
-    /** Setting `true` will write export fields to package.json (default: `false`) */
-    writePackageJson?: boolean | undefined
-    /** Setting `true` will console.log the package.json fields (default: `false`)  */
-    printInstructions?: boolean | undefined
-    /** Setting `true` will remove all `console.*` calls and `debugger` statements (default: `false`) */
-    dropConsole?: boolean | undefined
-    tsupOptions?: (config: Options) => Options
-    esbuildOptions?: Options['esbuildOptions']
-    /** Additional esbuild plugins (solid one is already included) */
-    esbuildPlugins?: Options['esbuildPlugins']
-    /** Setting `true` will generate a CommonJS build alongside ESM (default: `false`) */
-    cjs?: boolean | undefined
-}
+import * as tsup from 'tsup'
+import * as esbuild from 'esbuild'
+import { PackageJson } from 'type-fest'
+import { solidPlugin } from 'esbuild-plugin-solid'
 
 const CWD = process.cwd()
 const PKG_PATH = path.join(CWD, 'package.json')
@@ -39,244 +15,320 @@ const CI =
 
 const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
 
-export function defineConfig(
-    entryOptions: EntryOptions | EntryOptions[],
-    globalOptions: GlobalOptions = {},
-): ReturnType<typeof tsupDefineConfig> {
-    return tsupDefineConfig(config => {
-        const userEntries = asArray(entryOptions)
-        const watching = !CI && !!config.watch
-        const hasCjs = !!globalOptions.cjs
-        const libFormat: Options['format'] = hasCjs ? ['esm', 'cjs'] : 'esm'
-        const outDir = './dist/'
+export type EntryOptions = {
+    name?: string | undefined
+    /** entries with '.tsx' extension will have `solid` export condition generated */
+    entry: string
+    /** Setting `true` will generate a development-only entry (default: `false`) */
+    dev_entry?: boolean | string
+    /** Setting `true` will generate a server-only entry (default: `false`) */
+    server_entry?: boolean | string
+}
 
-        const tsupOptions = globalOptions.tsupOptions ?? (x => x)
-        const esbuildOptions = globalOptions.esbuildOptions ?? (x => x)
-        const esbuildPlugins = globalOptions.esbuildPlugins ?? []
+export type ModifyEsbuildOptions = (
+    esbuild_options: esbuild.BuildOptions,
+    permutation: BuildPermutation,
+) => esbuild.BuildOptions
 
-        const shouldCollectExports =
-            !CI &&
-            !watching &&
-            !!(globalOptions.writePackageJson || globalOptions.printInstructions)
+export type PresetOptions = {
+    entries: EntryOptions | EntryOptions[]
+    /** Setting `true` will write export fields to package.json (default: `false`) */
+    write_package_json?: boolean | undefined
+    /** Setting `true` will console.log the package.json fields (default: `false`)  */
+    print_instructions?: boolean | undefined
+    /** Setting `true` will remove all `console.*` calls and `debugger` statements (default: `false`) */
+    drop_console?: boolean | undefined
+    /** Pass options to esbuild */
+    esbuild_options?: ModifyEsbuildOptions
+    /** Additional esbuild plugins (solid one is already included) */
+    esbuild_plugins?: tsup.Options['esbuildPlugins']
+    /** Setting `true` will generate a CommonJS build alongside ESM (default: `false`) */
+    cjs?: boolean | undefined
+}
 
-        const pkgfields: PackageJson = { browser: {}, exports: {}, typesVersions: {} }
-        let buildsToComplete = watching ? Infinity : 0
-        // Handle the last build to write the package.json
-        async function onSuccess() {
-            if (!shouldCollectExports || --buildsToComplete > 0) return
+export type ParsedPresetOptions = {
+    watching: boolean
+    single_entry: boolean
+    entries: ParsedEntry[]
+    out_dir: string
+    with_cjs: boolean
+    format: tsup.Options['format']
+    drop_console: boolean
+    esbuild_options: ModifyEsbuildOptions
+    esbuild_plugins: esbuild.Plugin[]
+}
 
-            if (globalOptions.printInstructions) {
-                // eslint-disable-next-line no-console
-                console.log(
-                    `\nTo use these exports, add the following to your package.json:\n\n${JSON.stringify(
-                        pkgfields,
-                        null,
-                        2,
-                    )}\n`,
-                )
-            }
+export type ParsedEntry = {
+    options: EntryOptions
+    filename: string
+    main_export: string
+    dev_export: string
+    server_export: string
+    types_export: string
+    with_jsx: boolean
+    with_dev: boolean
+    with_server: boolean
+    paths: EntryExportPaths
+}
 
-            if (globalOptions.writePackageJson) {
-                const pkg: PackageJson = await fsp.readFile(PKG_PATH, 'utf-8').then(JSON.parse)
-                const newPkg = { ...pkg, ...pkgfields }
-                await fsp.writeFile(PKG_PATH, JSON.stringify(newPkg, null, 2) + '\n', 'utf-8')
-            }
+export type EntryExportPaths = {
+    server: string
+    dev: string
+    main: string
+    types: string
+}
+
+export type BuildPermutation = {
+    entries: Set<ParsedEntry>
+    dev: boolean
+    server: boolean
+    jsx: boolean
+}
+
+export function parsePresetOptions(
+    preset_options: PresetOptions,
+    cli_options: tsup.Options,
+): ParsedPresetOptions {
+    const entries = asArray(preset_options.entries)
+    const watching = !CI && !!cli_options.watch
+    const hasCjs = !!preset_options.cjs
+    const libFormat: tsup.Options['format'] = hasCjs ? ['esm', 'cjs'] : 'esm'
+    const outDir = './dist/'
+
+    const tsupOptions = preset_options.tsup_options ?? (x => x)
+    const esbuildOptions = preset_options.esbuild_options ?? (x => x)
+    const esbuildPlugins = preset_options.esbuild_plugins ?? []
+
+    const shouldCollectExports =
+        !CI &&
+        !watching &&
+        !!(preset_options.write_package_json || preset_options.print_instructions)
+
+    const pkgfields: PackageJson = { browser: {}, exports: {}, typesVersions: {} }
+    let buildsToComplete = watching ? Infinity : 0
+    // Handle the last build to write the package.json
+    async function onSuccess() {
+        if (!shouldCollectExports || --buildsToComplete > 0) return
+
+        if (preset_options.print_instructions) {
+            // eslint-disable-next-line no-console
+            console.log(
+                `\nTo use these exports, add the following to your package.json:\n\n${JSON.stringify(
+                    pkgfields,
+                    null,
+                    2,
+                )}\n`,
+            )
         }
 
-        const getExport = (fileName: string, exportName: string) =>
-            `${userEntries.length === 1 ? '' : `${fileName}/`}${exportName}`
+        if (preset_options.write_package_json) {
+            const pkg: PackageJson = await fsp.readFile(PKG_PATH, 'utf-8').then(JSON.parse)
+            const newPkg = { ...pkg, ...pkgfields }
+            await fsp.writeFile(PKG_PATH, JSON.stringify(newPkg, null, 2) + '\n', 'utf-8')
+        }
+    }
 
-        //
-        // Parse the entries
-        //
-        const parsedEntires = userEntries.map(options => {
-            const entryFilename =
-                options.name ?? path.basename(path.normalize(options.entry)).split('.')[0]!
-            const mainExport = getExport(entryFilename, 'index')
-            const devExport = getExport(entryFilename, 'dev')
-            const serverExport = getExport(entryFilename, 'server')
-            const typesExport = `${getExport(entryFilename, 'index')}.d.ts`
+    const getExport = (fileName: string, exportName: string) =>
+        `${entries.length === 1 ? '' : `${fileName}/`}${exportName}`
 
-            const hasJSX = options.entry.endsWith('.jsx') || options.entry.endsWith('.tsx')
-            const hasDev = !!options.devEntry
-            const hasServer = !!options.serverEntry
+    //
+    // Parse the entries
+    //
+    const parsedEntires = entries.map(options => {
+        const entryFilename =
+            options.name ?? path.basename(path.normalize(options.entry)).split('.')[0]!
+        const mainExport = getExport(entryFilename, 'index')
+        const devExport = getExport(entryFilename, 'dev')
+        const serverExport = getExport(entryFilename, 'server')
+        const typesExport = `${getExport(entryFilename, 'index')}.d.ts`
 
-            return {
-                options,
-                entryFilename,
-                mainExport,
-                devExport,
-                serverExport,
-                typesExport,
-                hasJSX,
-                hasDev,
-                hasServer,
-            }
-        })
+        const hasJSX = options.entry.endsWith('.jsx') || options.entry.endsWith('.tsx')
+        const hasDev = !!options.dev_entry
+        const hasServer = !!options.server_entry
 
-        type ParsedEntry = (typeof parsedEntires)[number]
+        return {
+            options,
+            entryFilename,
+            mainExport,
+            devExport,
+            serverExport,
+            typesExport,
+            hasJSX,
+            hasDev,
+            hasServer,
+        }
+    })
 
-        //
-        // generate package.json exports
-        //
-        if (shouldCollectExports) {
-            type Browser = Exclude<PackageJson['browser'], string | undefined>
+    return {
+        watching,
+    }
+}
 
-            // "typeVersions" are for older versions of ts, but are still needed for some tools
-            // They are only needed if there are multiple entries
-            const typesVersions: NonNullable<NonNullable<PackageJson['typesVersions']>[string]> = {}
-            if (userEntries.length !== 1) pkgfields.typesVersions = { '*': typesVersions }
+export const getImportConditions = (
+    options: ParsedPresetOptions,
+    entry: ParsedEntry,
+    file_type: keyof EntryExportPaths,
+): PackageJson.ExportConditions => ({
+    import: {
+        types: entry.paths.types,
+        default: `${entry.paths[file_type]}.js`,
+    },
+    ...(options.with_cjs && { require: `${entry.paths[file_type]}.cjs` }),
+})
 
-            parsedEntires.forEach((e, i) => {
-                const exports = {
-                    server: `${outDir}${e.serverExport}`,
-                    dev: `${outDir}${e.devExport}`,
-                    main: `${outDir}${e.mainExport}`,
-                    types: `${outDir}${e.typesExport}`,
-                }
+export const getConditions = (
+    options: ParsedPresetOptions,
+    entry: ParsedEntry,
+    type: 'server' | 'main',
+): PackageJson.ExportConditions => {
+    const add_dev = entry.with_dev && type === 'main'
+    return {
+        ...(entry.with_jsx && {
+            solid: add_dev
+                ? {
+                      development: `${entry.paths.dev}.jsx`,
+                      import: `${entry.paths[type]}.jsx`,
+                  }
+                : `${entry.paths[type]}.jsx`,
+        }),
+        ...(add_dev && { development: getImportConditions(options, entry, 'dev') }),
+        ...getImportConditions(options, entry, type),
+    }
+}
 
-                if (i === 0) {
-                    pkgfields.main = `${e.hasServer ? exports.server : exports.main}.${
-                        hasCjs ? 'cjs' : 'js'
-                    }`
-                    pkgfields.module = `${e.hasServer ? exports.server : exports.main}.js`
-                    pkgfields.types = exports.types
-                }
-                if (e.hasServer) {
-                    const b = pkgfields.browser as Browser
-                    b[`${exports.server}.js`] = `${exports.main}.js`
-                    if (hasCjs) b[`${exports.server}.cjs`] = `${exports.main}.cjs`
-                }
+export function generatePackageJsonExports(options: ParsedPresetOptions): PackageJson {
+    /*
+        "typeVersions" are for older versions of ts, but are still needed for some tools
+        They are only needed if there are multiple entries
+    */
+    const types_versions: Record<string, string[]> = {}
+    const browser: Record<string, string | false> = {}
+    const package_json: PackageJson = {
+        browser: browser,
+        exports: {},
+        typesVersions: options.single_entry ? { '*': types_versions } : (types_versions as any),
+    }
 
-                const getImportConditions = (filename: string) => ({
-                    import: {
-                        types: exports.types,
-                        default: `${filename}.js`,
-                    },
-                    ...(hasCjs && { require: `${filename}.cjs` }),
-                })
-                const getConditions = (type: 'server' | 'main') => {
-                    const dev = e.hasDev && type === 'main'
-                    return {
-                        ...(e.hasJSX && {
-                            solid: dev
-                                ? {
-                                      development: `${exports.dev}.jsx`,
-                                      import: `${exports[type]}.jsx`,
-                                  }
-                                : `${exports[type]}.jsx`,
-                        }),
-                        ...(dev && { development: getImportConditions(exports.dev) }),
-                        ...getImportConditions(exports[type]),
-                    } as const
-                }
-                const allConditions: PackageJson.Exports = {
-                    ...(e.hasServer && {
-                        worker: getConditions('server'),
-                        browser: getConditions('main'),
-                        deno: getConditions('server'),
-                        node: getConditions('server'),
-                    }),
-                    ...getConditions('main'),
-                }
+    for (let i = 0; i < options.entries.length; i++) {
+        const entry = options.entries[i]!
 
-                if (userEntries.length === 1) {
-                    pkgfields.exports = allConditions
-                } else if (e.entryFilename === 'index') {
-                    ;(pkgfields.exports as any)['.'] = allConditions
-                } else {
-                    ;(pkgfields.exports as any)[`./${e.entryFilename}`] = allConditions
-                    typesVersions[e.entryFilename] = [exports.types]
-                }
-            })
+        if (i === 0) {
+            package_json.main = `${entry.with_server ? entry.paths.server : entry.paths.main}.${
+                options.with_cjs ? 'cjs' : 'js'
+            }`
+            package_json.module = `${entry.with_server ? entry.paths.server : entry.paths.main}.js`
+            package_json.types = entry.paths.types
+        }
+        if (entry.with_server) {
+            browser[`${entry.paths.server}.js`] = `${entry.paths.main}.js`
+            if (options.with_cjs) browser[`${entry.paths.server}.cjs`] = `${entry.paths.main}.cjs`
         }
 
-        type Permutation = {
-            readonly dev: boolean
-            readonly server: boolean
-            readonly jsx: boolean
-            readonly entries: Set<ParsedEntry>
+        const conditions: PackageJson.Exports = {
+            ...(entry.with_server && {
+                worker: getConditions(options, entry, 'server'),
+                browser: getConditions(options, entry, 'main'),
+                deno: getConditions(options, entry, 'server'),
+                node: getConditions(options, entry, 'server'),
+            }),
+            ...getConditions(options, entry, 'main'),
         }
 
-        //
-        // Generate all build permutations
-        //
-        const permutations = parsedEntires.reduce((acc: Permutation[], entry) => {
-            for (const dev of [false, entry.hasDev]) {
-                for (const server of [false, entry.hasServer]) {
-                    if (dev && server) continue
-                    for (const jsx of [false, entry.hasJSX]) {
-                        const permutation = acc.find(
-                            p => p.dev === dev && p.server === server && p.jsx === jsx,
-                        )
-                        if (permutation) permutation.entries.add(entry)
-                        else acc.push({ dev, server, jsx, entries: new Set([entry]) })
-                    }
+        if (options.single_entry) {
+            package_json.exports = conditions
+        } else if (entry.filename === 'index') {
+            ;(package_json.exports as any)['.'] = conditions
+        } else {
+            ;(package_json.exports as any)[`./${entry.filename}`] = conditions
+            types_versions[entry.filename] = [exports.types]
+        }
+    }
+
+    return package_json
+}
+
+export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[] {
+    const permutations: BuildPermutation[] = []
+
+    for (const entry of options.entries) {
+        for (const dev of [false, entry.with_dev]) {
+            for (const server of [false, entry.with_server]) {
+                if (dev && server) continue
+                for (const jsx of [false, entry.with_jsx]) {
+                    const permutation = permutations.find(
+                        p => p.dev === dev && p.server === server && p.jsx === jsx,
+                    )
+                    if (permutation) permutation.entries.add(entry)
+                    else permutations.push({ dev, server, jsx, entries: new Set([entry]) })
                 }
             }
-            return acc
-        }, [])
+        }
+    }
 
-        //
-        // Generate the tsup config (build)
-        //
-        buildsToComplete = permutations.length
+    // buildsToComplete = permutations.length
 
-        return permutations.map(({ dev, jsx, server, entries }, i) => {
-            const main = !dev && !jsx && !server
+    return permutations.map((permutation, i) => {
+        const { dev, server, jsx, entries } = permutation
+        const is_main = !dev && !jsx && !server
 
-            return tsupOptions({
-                target: 'esnext',
-                platform: server ? 'node' : 'browser',
-                format: watching || jsx ? 'esm' : libFormat,
-                clean: !watching && i === 0,
-                dts: main ? true : undefined,
-                entry: (() => {
-                    const record: Record<string, string> = {}
-                    for (const e of entries) {
-                        record[dev ? e.devExport : server ? e.serverExport : e.mainExport] =
-                            dev && typeof e.options.devEntry === 'string'
-                                ? e.options.devEntry
-                                : server && typeof e.options.serverEntry === 'string'
-                                ? e.options.serverEntry
-                                : e.options.entry
-                    }
-                    return record
-                })(),
-                treeshake: watching ? false : { preset: 'safest' },
-                replaceNodeEnv: true,
-                esbuildOptions(esOptions, ctx) {
-                    esOptions.define = {
-                        ...esOptions.define,
-                        'process.env.NODE_ENV': dev ? `"development"` : `"production"`,
-                        'process.env.PROD': dev ? 'false' : 'true',
-                        'process.env.DEV': dev ? 'true' : 'false',
-                        'process.env.SSR': server ? 'true' : 'false',
-                        'import.meta.env.NODE_ENV': dev ? `"development"` : `"production"`,
-                        'import.meta.env.PROD': dev ? 'false' : 'true',
-                        'import.meta.env.DEV': dev ? 'true' : 'false',
-                        'import.meta.env.SSR': server ? 'true' : 'false',
-                    }
-                    esOptions.jsx = 'preserve'
+        const tsup_entry: Record<string, string> = {}
+        for (const entry of entries) {
+            tsup_entry[dev ? entry.dev_export : server ? entry.server_export : entry.main_export] =
+                dev && typeof entry.options.dev_entry === 'string'
+                    ? entry.options.dev_entry
+                    : server && typeof entry.options.server_entry === 'string'
+                    ? entry.options.server_entry
+                    : entry.options.entry
+        }
 
-                    esOptions.chunkNames = '[name]/[hash]'
+        return {
+            target: 'esnext',
+            platform: server ? 'node' : 'browser',
+            format: options.watching || jsx ? 'esm' : options.format,
+            clean: !options.watching && i === 0,
+            dts: is_main ? true : undefined,
+            entry: tsup_entry,
+            treeshake: options.watching ? false : { preset: 'safest' },
+            replaceNodeEnv: true,
+            esbuildOptions(esOptions) {
+                esOptions.define = {
+                    ...esOptions.define,
+                    'process.env.NODE_ENV': dev ? `"development"` : `"production"`,
+                    'process.env.PROD': dev ? 'false' : 'true',
+                    'process.env.DEV': dev ? 'true' : 'false',
+                    'process.env.SSR': server ? 'true' : 'false',
+                    'import.meta.env.NODE_ENV': dev ? `"development"` : `"production"`,
+                    'import.meta.env.PROD': dev ? 'false' : 'true',
+                    'import.meta.env.DEV': dev ? 'true' : 'false',
+                    'import.meta.env.SSR': server ? 'true' : 'false',
+                }
+                esOptions.jsx = 'preserve'
 
-                    if (!dev && globalOptions.dropConsole) esOptions.drop = ['console', 'debugger']
+                esOptions.chunkNames = '[name]/[hash]'
 
-                    return esbuildOptions(esOptions, ctx)
-                },
-                outExtension({ format }) {
-                    if (format === 'esm' && jsx) return { js: '.jsx' }
-                    return {}
-                },
-                esbuildPlugins: !jsx
-                    ? [
-                          solidPlugin({ solid: { generate: server ? 'ssr' : 'dom' } }) as any,
-                          ...esbuildPlugins,
-                      ]
-                    : esbuildPlugins,
-                onSuccess,
-            })
-        })
+                if (!dev && options.drop_console) esOptions.drop = ['console', 'debugger']
+
+                return options.esbuild_options(esOptions, permutation)
+            },
+            outExtension({ format }) {
+                if (format === 'esm' && jsx) return { js: '.jsx' }
+                return {}
+            },
+            esbuildPlugins: !jsx
+                ? [
+                      solidPlugin({ solid: { generate: server ? 'ssr' : 'dom' } }),
+                      ...options.esbuild_plugins,
+                  ]
+                : options.esbuild_plugins,
+            onSuccess,
+        }
+    })
+}
+
+export function defineConfig(preset_options: PresetOptions): ReturnType<typeof tsup.defineConfig> {
+    return tsup.defineConfig(cli_options => {
+        const options = parsePresetOptions(preset_options, cli_options)
+
+        return generateTsupOptions(options)
     })
 }
