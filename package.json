@@ -31,8 +31,7 @@
         "lint": "eslint --ignore-path .gitignore --max-warnings 0 src/**/*.{js,ts,tsx,jsx}"
     },
     "dependencies": {
-        "esbuild-plugin-solid": "^0.5.0",
-        "type-fest": "^4.0.0"
+        "esbuild-plugin-solid": "^0.5.0"
     },
     "peerDependencies": {
         "tsup": "^7.0.0"
