@@ -55,7 +55,7 @@ export function defineConfig(
     const esbuildPlugins = globalOptions.esbuildPlugins ?? []
 
     const shouldCollectExports =
-      !CI && !watching && !!(globalOptions?.writePackageJson || globalOptions?.printInstructions)
+      !CI && !watching && !!(globalOptions.writePackageJson || globalOptions.printInstructions)
 
     const pkgfields: PackageJson = { browser: {}, exports: {}, typesVersions: {} }
     let buildsToComplete = watching ? Infinity : 0
