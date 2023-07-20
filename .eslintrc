@@ -1,8 +1,8 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
-  "ignorePatterns": ["node_modules", "dist", "scripts", "example", "tsup.config.ts"],
+  "plugins": ["@typescript-eslint", "eslint-comments"],
+  "ignorePatterns": ["node_modules", "dist", "example", "tsup.config.ts"],
   "parserOptions": {
     "project": "./tsconfig.json",
     "tsconfigRootDir": ".",
@@ -12,10 +12,17 @@
     "prefer-const": "warn",
     "no-console": "warn",
     "no-debugger": "warn",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/no-unnecessary-type-assertion": "warn",
-    "@typescript-eslint/no-shadow": ["warn", { "builtinGlobals": true, "allow": ["_", "Plugin"] }],
+    "@typescript-eslint/no-unnecessary-condition": "warn",
     "@typescript-eslint/no-useless-empty-export": "warn",
-    "@typescript-eslint/prefer-enum-initializers": "warn"
+    "eslint-comments/no-unused-disable": "warn"
   }
 }
