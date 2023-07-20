@@ -1,7 +1,7 @@
 {
-  "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "types": ["vite/client"]
-  },
-  "include": ["./**/*"]
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "types": ["vite/client"]
+    },
+    "include": ["./**/*"]
 }

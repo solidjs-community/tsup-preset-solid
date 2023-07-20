@@ -1,7 +1,7 @@
 export const Test = () => {
-  'SERVER ENTRY'
+    'SERVER ENTRY'
 
-  console.log('This is a server entry point')
+    console.log('This is a server entry point')
 
-  return <div>Test</div>
+    return <div>Test</div>
 }
