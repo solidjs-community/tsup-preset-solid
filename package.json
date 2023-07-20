@@ -33,20 +33,20 @@
   },
   "dependencies": {
     "esbuild-plugin-solid": "^0.5.0",
-    "type-fest": "^3.6.0"
+    "type-fest": "^4.0.0"
   },
   "peerDependencies": {
     "tsup": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.13.0",
-    "@typescript-eslint/eslint-plugin": "^5.52.0",
-    "@typescript-eslint/parser": "^5.52.0",
+    "@typescript-eslint/eslint-plugin": "^6.1.0",
+    "@typescript-eslint/parser": "^6.1.0",
     "esbuild": "^0.18.2",
     "esbuild-plugin-solid": "^0.5.0",
-    "eslint": "^8.34.0",
-    "prettier": "2.8.4",
-    "prettier-plugin-organize-imports": "^3.2.2",
+    "eslint": "^8.45.0",
+    "prettier": "3.0.0",
+    "prettier-plugin-organize-imports": "^3.2.3",
     "tsup": "^7.1.0",
     "typescript": "^5.0.2"
   },
