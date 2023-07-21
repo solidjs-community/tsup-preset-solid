@@ -36,6 +36,7 @@ export interface ParsedPresetOptions {
     watching: boolean
     single_entry: boolean
     entries: ParsedEntry[]
+    index_entry: ParsedEntry
     out_dir: string
     cjs: boolean
     format: tsup.Options['format']
@@ -108,6 +109,12 @@ export function parsePresetOptions(
         }
     })
 
+    parsed_entries.sort((a, b) => {
+        if (a.filename === 'index') return -1
+        if (b.filename === 'index') return 1
+        return a.filename.localeCompare(b.filename)
+    })
+
     return {
         watching,
         format: with_cjs ? ['esm', 'cjs'] : 'esm',
@@ -116,6 +123,7 @@ export function parsePresetOptions(
         modify_esbuild_options: preset_options.modify_esbuild_options ?? (x => x),
         esbuild_plugins: preset_options.esbuild_plugins ?? [],
         entries: parsed_entries,
+        index_entry: parsed_entries.find(p => p.filename === 'index') ?? parsed_entries[0]!,
         drop_console: !!preset_options.drop_console,
         single_entry,
     }

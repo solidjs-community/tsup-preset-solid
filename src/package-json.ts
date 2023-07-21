@@ -84,16 +84,15 @@ export function generatePackageExports(options: ParsedPresetOptions): Package.Ex
         typesVersions: options.single_entry ? {} : { '*': types_versions },
     }
 
-    for (let i = 0; i < options.entries.length; i++) {
-        const entry = options.entries[i]!
-
-        if (i === 0) {
+    for (const entry of options.entries) {
+        if (entry === options.index_entry) {
             package_json.main = `${entry.type.server ? entry.paths.server : entry.paths.main}.${
                 options.cjs ? 'cjs' : 'js'
             }`
             package_json.module = `${entry.type.server ? entry.paths.server : entry.paths.main}.js`
             package_json.types = entry.paths.main + '.d.ts'
         }
+
         if (entry.type.server) {
             browser[entry.paths.server + '.js'] = entry.paths.main + '.js'
             if (options.cjs) browser[entry.paths.server + '.cjs'] = entry.paths.main + '.cjs'

@@ -4,6 +4,12 @@ import * as preset from '../src' // 'tsup-preset-solid'
 const preset_options: preset.PresetOptions = {
     // array or single object
     entries: [
+        {
+            // non-default entries with "index" filename should have a name specified
+            name: 'additional',
+            entry: 'src/additional/index.ts',
+            dev_entry: true,
+        },
         // default entry (index)
         {
             // entries with '.tsx' extension will have `solid` export condition generated
@@ -12,12 +18,6 @@ const preset_options: preset.PresetOptions = {
             dev_entry: 'src/dev.tsx',
             // set `true` or pass a specific path to generate a server-only entry
             server_entry: true,
-        },
-        {
-            // non-default entries with "index" filename should have a name specified
-            name: 'additional',
-            entry: 'src/additional/index.ts',
-            dev_entry: true,
         },
         {
             entry: 'src/shared.ts',
@@ -32,10 +32,10 @@ const preset_options: preset.PresetOptions = {
 export default defineConfig(config => {
     const watching = !!config.watch
 
-    const parsed_options = preset.parsePresetOptions(preset_options, watching)
+    const parsed_data = preset.parsePresetOptions(preset_options, watching)
 
     if (!watching) {
-        const package_fields = preset.generatePackageExports(parsed_options)
+        const package_fields = preset.generatePackageExports(parsed_data)
 
         console.log(`package.json: \n\n${JSON.stringify(package_fields, null, 2)}\n\n`)
 
@@ -45,5 +45,5 @@ export default defineConfig(config => {
         preset.writePackageJson(package_fields)
     }
 
-    return preset.generateTsupOptions(parsed_options)
+    return preset.generateTsupOptions(parsed_data)
 })

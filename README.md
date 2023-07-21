@@ -76,12 +76,12 @@ const preset_options: preset.PresetOptions = {
 export default defineConfig(config => {
     const watching = !!config.watch
 
-    const parsed_options = preset.parsePresetOptions(preset_options, watching)
+    const parsed_data = preset.parsePresetOptions(preset_options, watching)
 
     if (!watching) {
-        const package_fields = preset.generatePackageExports(parsed_options)
+        const package_fields = preset.generatePackageExports(parsed_data)
 
-        console.log(`package.json: \n\n${JSON.stringify(package_fields, null, 2)}\n\n`)
+        console.log(`\npackage.json: \n${JSON.stringify(package_fields, null, 2)}\n\n`)
 
         /*
             will update ./package.json with the correct export fields
@@ -89,7 +89,7 @@ export default defineConfig(config => {
         preset.writePackageJson(package_fields)
     }
 
-    return preset.generateTsupOptions(parsed_options)
+    return preset.generateTsupOptions(parsed_data)
 })
 ```
 
