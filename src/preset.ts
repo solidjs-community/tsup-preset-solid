@@ -106,10 +106,10 @@ export function parsePresetOptions(
             filename,
             exports,
             paths: {
-                main: path.join(out_dir, exports.main),
-                dev: path.join(out_dir, exports.dev),
-                server: path.join(out_dir, exports.server),
-                types: path.join(out_dir, exports.types),
+                main: out_dir + exports.main,
+                dev: out_dir + exports.dev,
+                server: out_dir + exports.server,
+                types: out_dir + exports.types,
             },
             type: {
                 dev: !!options.dev_entry,
@@ -141,12 +141,12 @@ export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[
                 if (dev && server) continue
 
                 for (const jsx of [false, entry.type.jsx]) {
-                    const permutation = items.find(
+                    const item = items.find(
                         p => p.type.dev === dev && p.type.server === server && p.type.jsx === jsx,
                     )
 
-                    if (permutation) {
-                        permutation.entries.add(entry)
+                    if (item) {
+                        item.entries.add(entry)
                     } else {
                         items.push({ type: { dev, server, jsx }, entries: new Set([entry]) })
                     }
@@ -154,8 +154,6 @@ export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[
             }
         }
     }
-
-    // buildsToComplete = permutations.length
 
     return items.map((item, i) => {
         const { type, entries } = item

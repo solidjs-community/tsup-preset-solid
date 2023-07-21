@@ -133,6 +133,5 @@
     },
     "keywords": [
         "solid"
-    ],
-    "packageManager": "pnpm@7.20.0"
+    ]
 }
