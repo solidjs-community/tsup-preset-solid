@@ -56,7 +56,6 @@ export interface EntryExportPaths {
     main: string
     dev: string
     server: string
-    types: string
 }
 
 export interface EntryType {
@@ -90,7 +89,6 @@ export function parsePresetOptions(
             main: getExport(filename, 'index'),
             dev: getExport(filename, 'dev'),
             server: getExport(filename, 'server'),
-            types: `${getExport(filename, 'index')}.d.ts`,
         }
 
         return {
@@ -101,7 +99,6 @@ export function parsePresetOptions(
                 main: out_dir + exports.main,
                 dev: out_dir + exports.dev,
                 server: out_dir + exports.server,
-                types: out_dir + exports.types,
             },
             type: {
                 dev: !!options.dev_entry,
@@ -147,7 +144,7 @@ export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[
         }
     }
 
-    return items.map((item, i) => {
+    return items.map((item, i): tsup.Options => {
         const { type, entries } = item
         const is_main = !type.dev && !type.jsx && !type.server
 

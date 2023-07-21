@@ -6,7 +6,12 @@ export namespace Package {
     export type Browser = Record<string, string | false>
     export type TypeVersions = Record<string, string[]>
     export type ExportConditions = { [key: string]: Exports }
-    export type Exports = null | string | (string | ExportConditions)[] | ExportConditions
+    export type Exports =
+        | null
+        | string
+        | (string | ExportConditions)[]
+        | ExportConditions
+        | undefined
 
     export interface ExportFields {
         main: string
@@ -28,10 +33,15 @@ export const getImportConditions = (
     file_type: keyof EntryExportPaths,
 ): Package.ExportConditions => ({
     import: {
-        types: entry.paths.types,
-        default: `${entry.paths[file_type]}.js`,
+        types: entry.paths.main + '.d.ts',
+        default: entry.paths[file_type] + '.js',
     },
-    ...(options.cjs && { require: `${entry.paths[file_type]}.cjs` }),
+    require: options.cjs
+        ? {
+              types: entry.paths.main + '.d.cts',
+              default: entry.paths[file_type] + '.cjs',
+          }
+        : undefined,
 })
 
 export const getConditions = (
@@ -41,15 +51,15 @@ export const getConditions = (
 ): Package.ExportConditions => {
     const add_dev = entry.type.dev && type === 'main'
     return {
-        ...(entry.type.jsx && {
-            solid: add_dev
+        solid: entry.type.jsx
+            ? add_dev
                 ? {
                       development: `${entry.paths.dev}.jsx`,
                       import: `${entry.paths[type]}.jsx`,
                   }
-                : `${entry.paths[type]}.jsx`,
-        }),
-        ...(add_dev && { development: getImportConditions(options, entry, 'dev') }),
+                : `${entry.paths[type]}.jsx`
+            : undefined,
+        development: add_dev ? getImportConditions(options, entry, 'dev') : undefined,
         ...getImportConditions(options, entry, type),
     }
 }
@@ -82,11 +92,11 @@ export function generatePackageExports(options: ParsedPresetOptions): Package.Ex
                 options.cjs ? 'cjs' : 'js'
             }`
             package_json.module = `${entry.type.server ? entry.paths.server : entry.paths.main}.js`
-            package_json.types = entry.paths.types
+            package_json.types = entry.paths.main + '.d.ts'
         }
         if (entry.type.server) {
-            browser[`${entry.paths.server}.js`] = `${entry.paths.main}.js`
-            if (options.cjs) browser[`${entry.paths.server}.cjs`] = `${entry.paths.main}.cjs`
+            browser[entry.paths.server + '.js'] = entry.paths.main + '.js'
+            if (options.cjs) browser[entry.paths.server + '.cjs'] = entry.paths.main + '.cjs'
         }
 
         const conditions: Package.Exports = {
@@ -105,7 +115,7 @@ export function generatePackageExports(options: ParsedPresetOptions): Package.Ex
             package_json.exports['.'] = conditions
         } else {
             package_json.exports[`./${entry.filename}`] = conditions
-            types_versions[entry.filename] = [entry.paths.types]
+            types_versions[entry.filename] = [entry.paths.main + '.d.ts']
         }
     }
 
