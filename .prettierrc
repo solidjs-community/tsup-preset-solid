@@ -8,7 +8,6 @@
     "arrowParens": "avoid",
     "bracketSpacing": true,
     "endOfLine": "lf",
-    "plugins": ["prettier-plugin-organize-imports"],
     "overrides": [
         {
             "files": "*.yml",
