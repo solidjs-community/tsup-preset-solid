@@ -12,21 +12,21 @@ Preset for building your SolidJS packages with ease using [**tsup**](https://tsu
 
 ## Features
 
-- **Preconfigured** - Just install, set your entries and use it.
+-   **Preconfigured** - Just install, set your entries and you're done.
 
-- **Fast** - Uses [**esbuild**](https://esbuild.github.io) under the hood.
+-   **Fast** - Uses [**esbuild**](https://esbuild.github.io) under the hood.
 
-- **SolidStart support** - Includes `solid` export condition with preserved JSX.
+-   **SolidStart support** - Includes `solid` export condition with preserved JSX.
 
-- **Best practices** - Ensures that the built library works well with Solid's tooling ecosystem.
+-   **Best practices** - Ensures that the built library works well with Solid's tooling ecosystem.
 
-- **Development and server entries** - Creates a separate entry for development, server-side rendering and production form a single source.
+-   **Development and server entries** - Creates a separate entry for development, server-side rendering and production form a single source.
 
-- **Multiple entries** - Supports multiple package entries. _(submodules)_
+-   **Multiple entries** - Supports multiple package entries. _(submodules)_
 
-- **Automatic package.json configuration** - Automatically writes export fields to `package.json` based on passed options.
+-   **Automatic package.json configuration** - Automatically writes export fields to `package.json` based on passed options.
 
-> **Warning** This is a very fresh project, so diverging from the happy path may cause unexpected results. [Please report any issues you find.](https://github.com/solidjs-community/tsup-preset-solid/issues)
+> **Warning** This preset is tailored towards a specific usage, mainly for primitives libraries or small headless libraries, so diverging from the happy path may cause unexpected results. [Please report any issues you find.](https://github.com/solidjs-community/tsup-preset-solid/issues)
 
 ## Quick start
 
@@ -42,46 +42,65 @@ pnpm add -D tsup tsup-preset-solid
 
 ```ts
 // tsup.config.ts
-import { defineConfig } from 'tsup-preset-solid'
+import { defineConfig } from 'tsup'
+import * as preset from 'tsup-preset-solid'
 
-export default defineConfig(
-  // entries (array or single object)
-  [
-    // first entry in array should be the main one (index)
-    {
-      // entries with '.tsx' extension will have `solid` export condition generated
-      entry: 'src/index.tsx',
-      // Setting `true` will generate a development-only entry
-      devEntry: true,
-      // Setting `true` will generate a server-only entry
-      serverEntry: true,
-    },
-    {
-      entry: 'src/additional.ts',
-    },
-  ],
-  // additional options
-  {
-    // Setting `true` will console.log the package.json fields
-    printInstructions: true,
-    // Setting `true` will write export fields to package.json
-    writePackageJson: true,
+const preset_options: preset.PresetOptions = {
+    // array or single object
+    entries: [
+        // default entry (index)
+        {
+            // entries with '.tsx' extension will have `solid` export condition generated
+            entry: 'src/index.tsx',
+            // set `true` or pass a specific path to generate a development-only entry
+            dev_entry: 'src/dev.tsx',
+            // set `true` or pass a specific path to generate a server-only entry
+            server_entry: true,
+        },
+        {
+            // non-default entries with "index" filename should have a name specified
+            name: 'additional',
+            entry: 'src/additional/index.ts',
+            dev_entry: true,
+        },
+        {
+            entry: 'src/shared.ts',
+        },
+    ],
     // Setting `true` will remove all `console.*` calls and `debugger` statements
-    dropConsole: true,
+    drop_console: true,
     // Setting `true` will generate a CommonJS build alongside ESM (default: `false`)
     cjs: true,
-  },
-)
+}
+
+export default defineConfig(config => {
+    const watching = !!config.watch
+
+    const parsed_options = preset.parsePresetOptions(preset_options, watching)
+
+    if (!watching) {
+        const package_fields = preset.generatePackageExports(parsed_options)
+
+        console.log(`package.json: \n\n${JSON.stringify(package_fields, null, 2)}\n\n`)
+
+        /*
+            will update ./package.json with the correct export fields
+        */
+        preset.writePackageJson(package_fields)
+    }
+
+    return preset.generateTsupOptions(parsed_options)
+})
 ```
 
 ### Add scripts to your `package.json`
 
 ```json
 {
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch"
-  }
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch"
+    }
 }
 ```
 
@@ -89,28 +108,28 @@ export default defineConfig(
 
 1. **`solid` export condition**
 
-   This preset will automatically add `solid` export condition to your `package.json` if you have any `.tsx` entry files. This is required for SolidStart to work properly.
+    This preset will automatically add `solid` export condition to your `package.json` if you have any `.tsx` entry files. This is required for SolidStart to work properly.
 
 2. **"type": "module"**
 
-   This preset requires your package to be a module.
+    This preset requires your package to be a module.
 
 3. **Needs ESM**
 
-   This preset requires your package to be ESM. If you want to support CJS additionally, you can set `cjs: true` in the options. Other export format are not supported.
+    This preset requires your package to be ESM. If you want to support CJS additionally, you can set `cjs: true` in the options. Other export format are not supported.
 
 4. **development-only `solid` export issue**
 
-   Currently SolidStart has an issue with `development` and `solid` export condition. ([solid-start issue](https://github.com/solidjs/solid-start/issues/651))
+    Currently SolidStart has an issue with `development` and `solid` export condition. ([solid-start issue](https://github.com/solidjs/solid-start/issues/651))
 
-   This can be "fixed" by overriding the `@rollup/plugin-node-resolve` dependency in your `package.json`:
+    This can be "fixed" by overriding the `@rollup/plugin-node-resolve` dependency in your `package.json`:
 
-   ```json
-   {
-     "pnpm": {
-       "overrides": {
-         "@rollup/plugin-node-resolve": "13.3.0"
-       }
-     }
-   }
-   ```
+    ```json
+    {
+        "pnpm": {
+            "overrides": {
+                "@rollup/plugin-node-resolve": "13.3.0"
+            }
+        }
+    }
+    ```

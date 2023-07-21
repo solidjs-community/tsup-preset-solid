@@ -1,6 +1,6 @@
 import fsp from 'fs/promises'
 import path from 'path'
-import { ParsedPresetOptions, ParsedEntry, EntryExportPaths, CWD } from './preset'
+import { ParsedPresetOptions, ParsedEntry, EntryExportPaths } from './preset'
 
 export namespace Package {
     export type Browser = Record<string, string | false>
@@ -112,6 +112,7 @@ export function generatePackageExports(options: ParsedPresetOptions): Package.Ex
     return package_json
 }
 
+export const CWD = process.cwd()
 export const DEFAULT_PKG_PATH = path.join(CWD, 'package.json')
 
 const asWarning = (message: string) => `\x1b[33m${message}\x1b[0m`

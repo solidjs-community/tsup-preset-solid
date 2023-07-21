@@ -3,13 +3,6 @@ import * as tsup from 'tsup'
 import * as esbuild from 'esbuild'
 import { solidPlugin } from 'esbuild-plugin-solid'
 
-export const CWD = process.cwd()
-export const CI =
-    process.env['CI'] === 'true' ||
-    process.env['GITHUB_ACTIONS'] === 'true' ||
-    process.env['CI'] === '"1"' ||
-    process.env['GITHUB_ACTIONS'] === '"1"'
-
 const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
 
 export interface EntryOptions {
@@ -79,10 +72,9 @@ export interface BuildItem {
 
 export function parsePresetOptions(
     preset_options: PresetOptions,
-    cli_options: tsup.Options,
+    watching: boolean = false,
 ): ParsedPresetOptions {
     const entries = asArray(preset_options.entries)
-    const watching = !CI && !!cli_options.watch
     const with_cjs = !!preset_options.cjs
     const out_dir = './dist/'
     const single_entry = entries.length === 1
