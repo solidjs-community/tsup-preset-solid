@@ -12,7 +12,7 @@ export const CI =
 
 const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
 
-export type EntryOptions = {
+export interface EntryOptions {
     name?: string | undefined
     /** entries with '.tsx' extension will have `solid` export condition generated */
     entry: string
@@ -27,7 +27,7 @@ export type ModifyEsbuildOptions = (
     permutation: BuildItem,
 ) => esbuild.BuildOptions
 
-export type PresetOptions = {
+export interface PresetOptions {
     entries: EntryOptions | EntryOptions[]
     /** Setting `true` will remove all `console.*` calls and `debugger` statements (default: `false`) */
     drop_console?: boolean | undefined
@@ -39,19 +39,19 @@ export type PresetOptions = {
     cjs?: boolean | undefined
 }
 
-export type ParsedPresetOptions = {
+export interface ParsedPresetOptions {
     watching: boolean
     single_entry: boolean
     entries: ParsedEntry[]
     out_dir: string
-    with_cjs: boolean
+    cjs: boolean
     format: tsup.Options['format']
     drop_console: boolean
     modify_esbuild_options: ModifyEsbuildOptions
     esbuild_plugins: esbuild.Plugin[]
 }
 
-export type ParsedEntry = {
+export interface ParsedEntry {
     options: EntryOptions
     filename: string
     type: EntryType
@@ -59,20 +59,20 @@ export type ParsedEntry = {
     paths: EntryExportPaths
 }
 
-export type EntryExportPaths = {
+export interface EntryExportPaths {
     main: string
     dev: string
     server: string
     types: string
 }
 
-export type EntryType = {
+export interface EntryType {
     dev: boolean
     server: boolean
     jsx: boolean
 }
 
-export type BuildItem = {
+export interface BuildItem {
     entries: Set<ParsedEntry>
     type: EntryType
 }
@@ -122,7 +122,7 @@ export function parsePresetOptions(
     return {
         watching,
         format: with_cjs ? ['esm', 'cjs'] : 'esm',
-        with_cjs,
+        cjs: with_cjs,
         out_dir,
         modify_esbuild_options: preset_options.modify_esbuild_options ?? (x => x),
         esbuild_plugins: preset_options.esbuild_plugins ?? [],
@@ -217,13 +217,5 @@ export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[
                   ]
                 : options.esbuild_plugins,
         }
-    })
-}
-
-export function defineConfig(preset_options: PresetOptions): ReturnType<typeof tsup.defineConfig> {
-    return tsup.defineConfig(cli_options => {
-        const options = parsePresetOptions(preset_options, cli_options)
-
-        return generateTsupOptions(options)
     })
 }

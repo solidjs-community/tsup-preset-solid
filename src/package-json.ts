@@ -2,45 +2,43 @@ import fsp from 'fs/promises'
 import path from 'path'
 import { ParsedPresetOptions, ParsedEntry, EntryExportPaths, CWD } from './preset'
 
-export type PackageBrowser = Record<string, string | false>
-export type PackageTypeVersions = Record<string, string[]>
-export type PackageExportConditions = { [key: string]: PackageExports }
-export type PackageExports =
-    | null
-    | string
-    | (string | PackageExportConditions)[]
-    | PackageExportConditions
+export namespace Package {
+    export type Browser = Record<string, string | false>
+    export type TypeVersions = Record<string, string[]>
+    export type ExportConditions = { [key: string]: Exports }
+    export type Exports = null | string | (string | ExportConditions)[] | ExportConditions
 
-export type PackageExportFields = {
-    main: string
-    module: string
-    types: string
-    browser: PackageBrowser
-    exports: Record<string, PackageExportConditions> | PackageExportConditions
-    /**
-     *   "typeVersions" are for older versions of ts, but are still needed for some tools
-     *   They are only needed if there are multiple entries
-     */
-    typesVersions: Record<string, PackageTypeVersions> | PackageTypeVersions
+    export interface ExportFields {
+        main: string
+        module: string
+        types: string
+        browser: Browser
+        exports: Record<string, ExportConditions> | ExportConditions
+        /**
+         *   "typeVersions" are for older versions of ts, but are still needed for some tools
+         *   They are only needed if there are multiple entries
+         */
+        typesVersions: Record<string, TypeVersions> | TypeVersions
+    }
 }
 
 export const getImportConditions = (
     options: ParsedPresetOptions,
     entry: ParsedEntry,
     file_type: keyof EntryExportPaths,
-): PackageExportConditions => ({
+): Package.ExportConditions => ({
     import: {
         default: `${entry.paths[file_type]}.js`,
         types: entry.paths.types,
     },
-    ...(options.with_cjs && { require: `${entry.paths[file_type]}.cjs` }),
+    ...(options.cjs && { require: `${entry.paths[file_type]}.cjs` }),
 })
 
 export const getConditions = (
     options: ParsedPresetOptions,
     entry: ParsedEntry,
     type: 'server' | 'main',
-): PackageExportConditions => {
+): Package.ExportConditions => {
     const add_dev = entry.type.dev && type === 'main'
     return {
         ...(entry.type.jsx && {
@@ -56,10 +54,10 @@ export const getConditions = (
     }
 }
 
-export function generatePackageJsonExports(options: ParsedPresetOptions): PackageExportFields {
-    const types_versions: PackageTypeVersions = {}
-    const browser: PackageBrowser = {}
-    const package_json: PackageExportFields = {
+export function generatePackageJsonExports(options: ParsedPresetOptions): Package.ExportFields {
+    const types_versions: Package.TypeVersions = {}
+    const browser: Package.Browser = {}
+    const package_json: Package.ExportFields = {
         main: '',
         module: '',
         types: '',
@@ -73,17 +71,17 @@ export function generatePackageJsonExports(options: ParsedPresetOptions): Packag
 
         if (i === 0) {
             package_json.main = `${entry.type.server ? entry.paths.server : entry.paths.main}.${
-                options.with_cjs ? 'cjs' : 'js'
+                options.cjs ? 'cjs' : 'js'
             }`
             package_json.module = `${entry.type.server ? entry.paths.server : entry.paths.main}.js`
             package_json.types = entry.paths.types
         }
         if (entry.type.server) {
             browser[`${entry.paths.server}.js`] = `${entry.paths.main}.js`
-            if (options.with_cjs) browser[`${entry.paths.server}.cjs`] = `${entry.paths.main}.cjs`
+            if (options.cjs) browser[`${entry.paths.server}.cjs`] = `${entry.paths.main}.cjs`
         }
 
-        const conditions: PackageExports = {
+        const conditions: Package.Exports = {
             ...(entry.type.server && {
                 worker: getConditions(options, entry, 'server'),
                 browser: getConditions(options, entry, 'main'),
@@ -108,12 +106,26 @@ export function generatePackageJsonExports(options: ParsedPresetOptions): Packag
 
 export const DEFAULT_PKG_PATH = path.join(CWD, 'package.json')
 
+const asWarning = (message: string) => `\x1b[33m${message}\x1b[0m`
+
 export async function writePackageJson(
     fields: Record<string, any>,
     filename: string = DEFAULT_PKG_PATH,
     space: string | number = 2,
 ): Promise<void> {
-    const pkg = await fsp.readFile(filename, 'utf-8').then(JSON.parse)
+    const buffer = await fsp.readFile(filename, 'utf-8')
+    const pkg: Record<string, any> = JSON.parse(buffer)
     const newPkg = { ...pkg, ...fields }
+
+    if (newPkg['type'] !== 'module') {
+        newPkg['type'] = 'module'
+        // eslint-disable-next-line no-console
+        console.log(
+            asWarning(
+                `\nWarning: package.json type field was not set to "module". This preset requires packages to be esm first. Setting it to "module".\n`,
+            ),
+        )
+    }
+
     await fsp.writeFile(filename, JSON.stringify(newPkg, null, space) + '\n', 'utf-8')
 }
