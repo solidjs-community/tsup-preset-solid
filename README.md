@@ -67,10 +67,10 @@ const preset_options: preset.PresetOptions = {
             entry: 'src/shared.ts',
         },
     ],
-    // Setting `true` will remove all `console.*` calls and `debugger` statements
+    // Set to `true` to remove all `console.*` calls and `debugger` statements in prod builds
     drop_console: true,
-    // Setting `true` will generate a CommonJS build alongside ESM (default: `false`)
-    cjs: true,
+    // Set to `true` to generate a CommonJS build alongside ESM
+    cjs: false,
 }
 
 export default defineConfig(config => {
