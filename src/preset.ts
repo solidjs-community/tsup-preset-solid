@@ -76,7 +76,12 @@ export interface BuildItem {
 
 const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
 
-function normalizeFilepath(filepath: string): string {
+/**
+ * From windows to unix. And add `"./"` if missing.
+ * @example
+ * normalizeFilepath('src\\index.ts') // => './src/index.ts'
+ */
+export function normalizeFilepath(filepath: string): string {
     filepath = filepath.replace(/\\/g, '/')
     if (!filepath.startsWith('./')) filepath = './' + filepath
     return filepath
@@ -146,6 +151,11 @@ export function parsePresetOptions(
     }
 }
 
+/**
+ * Generates an array of tsup options used by tsup to build the project.
+ * Each options item is a separate build.
+ * And one build can contain multiple entries.
+ */
 export function generateTsupOptions(
     options: ParsedPresetOptions,
     // TODO name this type

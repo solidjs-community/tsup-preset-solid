@@ -93,10 +93,12 @@ export default defineConfig(config => {
 })
 ```
 
-### Add scripts to your `package.json`
+### Add required fields and scripts to your `package.json`
 
 ```json
 {
+    "type": "module",
+    "files": ["dist"],
     "scripts": {
         "build": "tsup",
         "dev": "tsup --watch"
