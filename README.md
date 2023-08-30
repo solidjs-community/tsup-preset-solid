@@ -36,6 +36,8 @@ Preset for building your SolidJS packages with ease using [**tsup**](https://tsu
 npm i -D tsup tsup-preset-solid
 # or
 pnpm add -D tsup tsup-preset-solid
+# or
+yarn add -D tsup tsup-preset-solid
 ```
 
 ### Add it to your `tsup.config.ts`
