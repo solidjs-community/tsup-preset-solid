@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index dfd91052f3a1ca58a6a78a351a8eba14cc023d37..a74a5e8c57ff17853ad067db607b159d1a141389 100644
+--- a/package.json
++++ b/package.json
+@@ -8,6 +8,7 @@
+   "type": "module",
+   "exports": {
+     ".": {
++      "types": "./dist/types/plugin.d.ts",
+       "default": "./dist/cjs/plugin.cjs",
+       "node": "./dist/cjs/plugin.cjs",
+       "import": "./dist/esm/plugin.mjs"

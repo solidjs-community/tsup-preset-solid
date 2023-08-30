@@ -1,22 +1,22 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "types": ["node"],
-    "noUncheckedIndexedAccess": true,
-    "noPropertyAccessFromIndexSignature": true
-  },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src", "./tsup.config.ts"]
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "lib": ["ESNext"],
+        "jsx": "preserve",
+        "jsxImportSource": "solid-js",
+        "types": ["node"],
+        "strict": true,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "noEmit": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noUncheckedIndexedAccess": true,
+        "noPropertyAccessFromIndexSignature": true
+    },
+    "exclude": ["node_modules", "dist"],
+    "include": ["src", "./tsup.config.ts"]
 }

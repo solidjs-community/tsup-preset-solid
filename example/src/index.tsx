@@ -1,6 +1,6 @@
 import { Accessor, Component, createComputed, createSignal } from 'solid-js'
-import { additional } from './additional'
-import { $SYMBOL, SharedEnum } from './shared'
+import { additional } from './additional/index.js'
+import { $SYMBOL, SharedEnum } from './shared.js'
 
 export function createHello(): [Accessor<string>, (to: string) => void] {
     const [hello, setHello] = createSignal(

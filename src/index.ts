@@ -1,2 +1,2 @@
-export * from './preset'
-export * from './package-json'
+export * from './preset.js'
+export * from './package-json.js'

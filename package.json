@@ -37,16 +37,16 @@
         "tsup": "^7.0.0"
     },
     "devDependencies": {
-        "@types/node": "^18.13.0",
-        "@typescript-eslint/eslint-plugin": "^6.1.0",
-        "@typescript-eslint/parser": "^6.1.0",
-        "esbuild": "^0.18.2",
+        "@types/node": "^20.5.7",
+        "@typescript-eslint/eslint-plugin": "^6.5.0",
+        "@typescript-eslint/parser": "^6.5.0",
+        "esbuild": "^0.19.2",
         "esbuild-plugin-solid": "^0.5.0",
-        "eslint": "^8.45.0",
+        "eslint": "^8.48.0",
         "eslint-plugin-eslint-comments": "^3.2.0",
-        "prettier": "3.0.0",
-        "tsup": "^7.1.0",
-        "typescript": "^5.0.2"
+        "prettier": "3.0.3",
+        "tsup": "^7.2.0",
+        "typescript": "^5.2.2"
     },
     "keywords": [
         "solid",
@@ -56,5 +56,10 @@
         "solidjs",
         "solid-js"
     ],
-    "packageManager": "pnpm@7.20.0"
+    "packageManager": "pnpm@7.20.0",
+    "pnpm": {
+        "patchedDependencies": {
+            "esbuild-plugin-solid@0.5.0": "patches/esbuild-plugin-solid@0.5.0.patch"
+        }
+    }
 }

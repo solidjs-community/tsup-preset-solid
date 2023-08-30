@@ -1,6 +1,6 @@
 import fsp from 'fs/promises'
 import path from 'path'
-import { ParsedPresetOptions, ParsedEntry, EntryExportPaths } from './preset'
+import { ParsedPresetOptions, ParsedEntry, EntryExportPaths } from './preset.js'
 
 export namespace Package {
     export type Browser = Record<string, string | false>

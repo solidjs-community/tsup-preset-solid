@@ -3,8 +3,6 @@ import * as tsup from 'tsup'
 import * as esbuild from 'esbuild'
 import { solidPlugin } from 'esbuild-plugin-solid'
 
-const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
-
 export interface EntryOptions {
     name?: string | undefined
     /** entries with '.tsx' extension will have `solid` export condition generated */
@@ -27,20 +25,26 @@ export interface PresetOptions {
     /** Pass options to esbuild */
     modify_esbuild_options?: ModifyEsbuildOptions
     /** Additional esbuild plugins (solid one is already included) */
-    esbuild_plugins?: tsup.Options['esbuildPlugins']
+    esbuild_plugins?: esbuild.Plugin[]
     /** Setting `true` will generate a CommonJS build alongside ESM (default: `false`) */
     cjs?: boolean | undefined
+    /** Change the putput directory (default: "dist") */
+    out_dir?: string | undefined
 }
 
 export interface ParsedPresetOptions {
-    watching: boolean
     single_entry: boolean
     entries: ParsedEntry[]
     index_entry: ParsedEntry
     out_dir: string
     cjs: boolean
     format: tsup.Options['format']
+    /*
+    Passed directly to {@link generateTsupOptions}
+    TODO: move to generateTsupOptions
+    */
     drop_console: boolean
+    watching: boolean
     modify_esbuild_options: ModifyEsbuildOptions
     esbuild_plugins: esbuild.Plugin[]
 }
@@ -70,13 +74,26 @@ export interface BuildItem {
     type: EntryType
 }
 
+const asArray = <T>(value: T | T[]): T[] => (Array.isArray(value) ? value : [value])
+
+function normalizeFilepath(filepath: string): string {
+    filepath = filepath.replace(/\\/g, '/')
+    if (!filepath.startsWith('./')) filepath = './' + filepath
+    return filepath
+}
+
+/**
+ * Parses the options passed to the preset and returns a normalized object.
+ * Parsed options can then be passed to `generateTsupOptions` to generate the tsup options.
+ * Or to `generatePackageExports` to generate the package.json export fields.
+ */
 export function parsePresetOptions(
     preset_options: PresetOptions,
     watching: boolean = false,
 ): ParsedPresetOptions {
     const entries = asArray(preset_options.entries)
     const with_cjs = !!preset_options.cjs
-    const out_dir = './dist/'
+    const out_dir = preset_options.out_dir ?? 'dist/'
     const single_entry = entries.length === 1
 
     const getExport: (fileName: string, exportName: string) => string = single_entry
@@ -97,9 +114,9 @@ export function parsePresetOptions(
             filename,
             exports,
             paths: {
-                main: out_dir + exports.main,
-                dev: out_dir + exports.dev,
-                server: out_dir + exports.server,
+                main: normalizeFilepath(path.join(out_dir, exports.main)),
+                dev: normalizeFilepath(path.join(out_dir, exports.dev)),
+                server: normalizeFilepath(path.join(out_dir, exports.server)),
             },
             type: {
                 dev: !!options.dev_entry,
@@ -129,7 +146,14 @@ export function parsePresetOptions(
     }
 }
 
-export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[] {
+export function generateTsupOptions(
+    options: ParsedPresetOptions,
+    // TODO name this type
+    generate_options: {
+        /** Change the base directory (default: ".") */
+        base_dir?: string | undefined
+    } = {},
+): tsup.Options[] {
     const items: BuildItem[] = []
 
     for (const entry of options.entries) {
@@ -152,24 +176,29 @@ export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[
         }
     }
 
+    const base_dir = generate_options.base_dir ?? '.'
+    const out_dir = path.join(base_dir, options.out_dir)
+
     return items.map((item, i): tsup.Options => {
         const { type, entries } = item
         const is_main = !type.dev && !type.jsx && !type.server
 
         const tsup_entry: Record<string, string> = {}
         for (const entry of entries) {
-            tsup_entry[
-                type.dev
-                    ? entry.exports.dev
-                    : type.server
-                    ? entry.exports.server
-                    : entry.exports.main
-            ] =
+            const export_path = type.dev
+                ? entry.exports.dev
+                : type.server
+                ? entry.exports.server
+                : entry.exports.main
+
+            const entry_path =
                 type.dev && typeof entry.options.dev_entry === 'string'
                     ? entry.options.dev_entry
                     : type.server && typeof entry.options.server_entry === 'string'
                     ? entry.options.server_entry
                     : entry.options.entry
+
+            tsup_entry[export_path] = path.join(base_dir, entry_path)
         }
 
         return {
@@ -179,11 +208,12 @@ export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[
             clean: !options.watching && i === 0,
             dts: is_main ? true : undefined,
             entry: tsup_entry,
+            outDir: out_dir,
             treeshake: options.watching ? false : { preset: 'safest' },
             replaceNodeEnv: true,
-            esbuildOptions(esOptions) {
-                esOptions.define = {
-                    ...esOptions.define,
+            esbuildOptions(es_options) {
+                es_options.define = {
+                    ...es_options.define,
                     'process.env.NODE_ENV': type.dev ? `"development"` : `"production"`,
                     'process.env.PROD': type.dev ? 'false' : 'true',
                     'process.env.DEV': type.dev ? 'true' : 'false',
@@ -193,18 +223,23 @@ export function generateTsupOptions(options: ParsedPresetOptions): tsup.Options[
                     'import.meta.env.DEV': type.dev ? 'true' : 'false',
                     'import.meta.env.SSR': type.server ? 'true' : 'false',
                 }
-                esOptions.jsx = 'preserve'
+                es_options.jsx = 'preserve'
 
-                esOptions.chunkNames = '[name]/[hash]'
+                es_options.chunkNames = '[name]/[hash]'
 
-                if (!type.dev && options.drop_console) esOptions.drop = ['console', 'debugger']
+                if (!type.dev && options.drop_console) es_options.drop = ['console', 'debugger']
 
-                return options.modify_esbuild_options(esOptions, item)
+                return options.modify_esbuild_options(
+                    // @ts-expect-error tsup is in esbuild 0.18
+                    es_options,
+                    item,
+                )
             },
             outExtension({ format }) {
                 if (format === 'esm' && type.jsx) return { js: '.jsx' }
                 return {}
             },
+            // @ts-expect-error tsup is in esbuild 0.18
             esbuildPlugins: !type.jsx
                 ? [
                       solidPlugin({ solid: { generate: type.server ? 'ssr' : 'dom' } }),

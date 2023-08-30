@@ -1,4 +1,4 @@
-import { $SYMBOL, SharedEnum } from '../shared'
+import { $SYMBOL, SharedEnum } from '../shared.js'
 
 export const hello = 'world'
 export const A = SharedEnum.A
