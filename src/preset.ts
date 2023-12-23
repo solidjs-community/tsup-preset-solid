@@ -239,17 +239,12 @@ export function generateTsupOptions(
 
                 if (!type.dev && options.drop_console) es_options.drop = ['console', 'debugger']
 
-                return options.modify_esbuild_options(
-                    // @ts-expect-error tsup is in esbuild 0.18
-                    es_options,
-                    item,
-                )
+                return options.modify_esbuild_options(es_options, item)
             },
             outExtension({ format }) {
                 if (format === 'esm' && type.jsx) return { js: '.jsx' }
                 return {}
             },
-            // @ts-expect-error tsup is in esbuild 0.18
             esbuildPlugins: !type.jsx
                 ? [
                       solidPlugin({ solid: { generate: type.server ? 'ssr' : 'dom' } }),
