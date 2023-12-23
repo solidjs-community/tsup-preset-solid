@@ -34,7 +34,7 @@
         "esbuild-plugin-solid": "^0.5.0"
     },
     "peerDependencies": {
-        "tsup": "^7.0.0"
+        "tsup": "^8.0.0"
     },
     "devDependencies": {
         "@types/node": "^20.5.7",
@@ -45,7 +45,7 @@
         "eslint": "^8.48.0",
         "eslint-plugin-eslint-comments": "^3.2.0",
         "prettier": "3.0.3",
-        "tsup": "^7.2.0",
+        "tsup": "^8.0.1",
         "typescript": "^5.2.2"
     },
     "keywords": [
@@ -56,7 +56,7 @@
         "solidjs",
         "solid-js"
     ],
-    "packageManager": "pnpm@7.20.0",
+    "packageManager": "pnpm@8.12.1",
     "pnpm": {
         "patchedDependencies": {
             "esbuild-plugin-solid@0.5.0": "patches/esbuild-plugin-solid@0.5.0.patch"
