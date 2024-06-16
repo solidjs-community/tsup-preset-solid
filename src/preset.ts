@@ -28,7 +28,7 @@ export interface PresetOptions {
     esbuild_plugins?: esbuild.Plugin[]
     /** Setting `true` will generate a CommonJS build alongside ESM (default: `false`) */
     cjs?: boolean | undefined
-    /** Change the putput directory (default: "dist") */
+    /** Change the output directory (default: "dist") */
     out_dir?: string | undefined
 }
 
